@@ -5,10 +5,27 @@
 <div class="card">
     <div class="card-hd">
         <h1>Staff Dashboard</h1>
-        <p>Add a vehicle.</p>
+        <p>Register a customer and their vehicle.</p>
     </div>
     <div class="card-bd">
-        <form id="addVehicleForm" class="form">
+        <form id="registerCustomerForm" class="form">
+            <div class="field">
+                <label for="fullName">Full name</label>
+                <input id="fullName" type="text" required placeholder="Full name" />
+            </div>
+            <div class="field">
+                <label for="email">Email</label>
+                <input id="email" type="email" required placeholder="customer@example.com" />
+            </div>
+            <div class="field">
+                <label for="password">Temporary password</label>
+                <input id="password" type="password" minlength="6" required placeholder="Min 6 characters" />
+            </div>
+            <div class="field">
+                <label for="address">Address</label>
+                <input id="address" type="text" placeholder="Address (optional)" />
+            </div>
+
             <div class="field">
                 <label for="vehicleNo">Vehicle No</label>
                 <input id="vehicleNo" type="text" required placeholder="BA 12 PA 3456" />
@@ -25,13 +42,9 @@
                 <label for="model">Model</label>
                 <input id="model" type="text" required placeholder="Civic / R15" />
             </div>
-            <div class="field" style="grid-column: 1 / -1">
-                <label for="customerId">Customer ID</label>
-                <input id="customerId" type="number" inputmode="numeric" min="1" required placeholder="1" />
-            </div>
 
             <div class="actions" style="grid-column: 1 / -1">
-                <button class="btn primary" type="submit">Add Vehicle</button>
+                <button class="btn primary" type="submit">Register Customer</button>
             </div>
         </form>
 
@@ -48,23 +61,25 @@
         if (!token) window.location.href = "/login";
         if (role && role !== "staff") window.location.href = "/customer";
 
-        document.getElementById("addVehicleForm").addEventListener("submit", async (e) => {
+        document.getElementById("registerCustomerForm").addEventListener("submit", async (e) => {
             e.preventDefault();
+            const fullName = document.getElementById("fullName").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const address = document.getElementById("address").value.trim() || null;
             const vehicleNo = document.getElementById("vehicleNo").value.trim();
             const type = document.getElementById("type").value.trim();
             const brand = document.getElementById("brand").value.trim();
             const model = document.getElementById("model").value.trim();
-            const customerIdRaw = document.getElementById("customerId").value;
-            const customerId = Number(customerIdRaw);
 
-            if (!vehicleNo || !type || !brand || !model || !Number.isFinite(customerId) || customerId <= 0) return;
+            if (!fullName || !email || !password || !vehicleNo || !type || !brand) return;
 
             try {
-                const data = await window.VM.apiJson("/api/Vehicle/add", {
+                const data = await window.VM.apiJson("/api/staff/customers", {
                     method: "POST",
-                    body: JSON.stringify({ vehicleNo, model, brand, customerId, type }),
+                    body: JSON.stringify({ fullName, email, password, address, vehicleNo, model, brand, type }),
                 });
-                window.VM.showToast("ok", data.message || "Vehicle added");
+                window.VM.showToast("ok", data.message || "Customer registered");
             } catch (err) {
                 window.VM.showToast("bad", err.message || "Request failed");
             }
