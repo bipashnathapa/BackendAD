@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] • Vehicle Management</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+<div class="container">
+    <div class="topbar">
+        <a class="brand" href="/">
+            <span class="brand-badge" aria-hidden="true"></span>
+            <span>Vehicle Management</span>
+        </a>
+        <div class="nav">
+            <a class="btn" href="/" id="homeLink">Home</a>
+            <a class="btn" href="/login" id="loginLink">Login</a>
+            <a class="btn" href="/register" id="registerLink">Register</a>
+            <a class="btn primary" href="/customer" id="dashboardLink" style="display:none">Dashboard</a>
+        </div>
+    </div>
+
+    @RenderBody()
+</div>
+
+<script src="~/js/site.js"></script>
+@RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="card">
+    <div class="card-hd">
+        <h1>Sign in</h1>
+        <p>Use your email and password.</p>
+    </div>
+    <div class="card-bd">
+        <form id="loginForm" class="form one">
+            <div class="field">
+                <label for="email">Email</label>
+                <input id="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" type="password" autocomplete="current-password" required placeholder="••••••••" />
+            </div>
+            <div class="actions">
+                <button class="btn primary" type="submit">Sign in</button>
+                <a class="btn" href="/register">Create account</a>
+            </div>
+        </form>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.VM.wireNav();
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            if (!email || !password) return;
+
+            try {
+                const data = await window.VM.apiJson("/api/Auth/login", {
+                    method: "POST",
+                    body: JSON.stringify({ email, password }),
+                });
+                window.VM.setToken(data.token, email);
+                window.VM.showToast("ok", data.message || "Login successful");
+                const role = (window.VM.getUserRole() || "").toLowerCase();
+                const nextUrl = role === "staff" ? "/staff" : "/customer";
+                window.VM.wireNav();
+                setTimeout(() => window.location.href = nextUrl, 450);
+            } catch (err) {
+                window.VM.showToast("bad", err.message || "Login failed");
+            }
+        });
+    </script>
+}

@@ -1,0 +1,70 @@
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="card">
+    <div class="card-hd">
+        <h1>Create account</h1>
+        <p>Fill in your details to get started.</p>
+    </div>
+    <div class="card-bd">
+        <form id="registerForm" class="form">
+            <div class="field">
+                <label for="fullName">Full name</label>
+                <input id="fullName" type="text" autocomplete="name" required placeholder="Full name" />
+            </div>
+            <div class="field">
+                <label for="email">Email</label>
+                <input id="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" type="password" autocomplete="new-password" required minlength="6" placeholder="Min 6 characters" />
+            </div>
+            <div class="field">
+                <label for="userRole">Account type</label>
+                <select id="userRole" required>
+                    <option value="Customer">Customer</option>
+                    <option value="Staff">Staff</option>
+                </select>
+            </div>
+            <div class="field" style="grid-column: 1 / -1">
+                <label for="address">Address</label>
+                <textarea id="address" autocomplete="street-address" required placeholder="Address"></textarea>
+            </div>
+
+            <div class="actions" style="grid-column: 1 / -1">
+                <button class="btn primary" type="submit">Create account</button>
+                <a class="btn" href="/login">Already have an account?</a>
+            </div>
+        </form>
+
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.VM.wireNav();
+        document.getElementById("registerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById("fullName").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const address = document.getElementById("address").value.trim();
+            const userRole = document.getElementById("userRole").value;
+            if (!fullName || !email || !password || !address || !userRole) return;
+
+            try {
+                const data = await window.VM.apiJson("/api/Auth/register", {
+                    method: "POST",
+                    body: JSON.stringify({ fullName, email, password, address, userRole }),
+                });
+                window.VM.showToast("ok", data.message || "Registration successful");
+                setTimeout(() => window.location.href = "/login", 600);
+            } catch (err) {
+                window.VM.showToast("bad", err.message || "Registration failed");
+            }
+        });
+    </script>
+}

@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Customer";
+}
+
+<div class="card">
+    <div class="card-hd">
+        <h1>Customer Dashboard</h1>
+        <p>Welcome back.</p>
+    </div>
+    <div class="card-bd">
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.VM.wireNav();
+
+        const token = localStorage.getItem(window.VM.storageKeys.token) || "";
+        const role = (window.VM.getUserRole() || "").toLowerCase();
+        if (!token) window.location.href = "/login";
+        if (role === "staff") window.location.href = "/staff";
+    </script>
+}
