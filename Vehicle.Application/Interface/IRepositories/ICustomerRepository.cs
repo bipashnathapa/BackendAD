@@ -6,5 +6,5 @@ public interface ICustomerRepository
 {
     Task<Customer?> GetByUserIdAsync(string userId);
     Task<Customer> AddAsync(Customer customer);
+    Task<IReadOnlyList<Customer>> SearchAsync(string search, int take = 20);
 }
-

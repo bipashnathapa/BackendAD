@@ -6,23 +6,24 @@
     <title>@ViewData["Title"] • Vehicle Management</title>
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
-<body>
-<div class="container">
-    <div class="topbar">
-        <a class="brand" href="/">
-            <span class="brand-badge" aria-hidden="true"></span>
-            <span>Vehicle Management</span>
-        </a>
-        <div class="nav">
-            <a class="btn" href="/" id="homeLink">Home</a>
-            <a class="btn" href="/login" id="loginLink">Login</a>
-            <a class="btn" href="/register" id="registerLink">Register</a>
-            <a class="btn primary" href="/customer" id="dashboardLink" style="display:none">Dashboard</a>
-        </div>
+<body class="@(ViewData["BodyClass"] as string ?? "")">
+<header class="site-header">
+    <div class="shell">
+        <a class="logo" href="/" aria-label="Vehicle Management home">Vehicle Management</a>
+        <nav class="site-nav" aria-label="Primary">
+            <a class="nav-link" href="/" id="homeLink">Home</a>
+            <a class="nav-link" href="/login" id="loginLink">Login</a>
+            <a class="nav-link" href="/register" id="registerLink">Register</a>
+            <a class="nav-link nav-link--primary" href="/customer" id="dashboardLink" style="display:none">Dashboard</a>
+        </nav>
     </div>
+</header>
 
-    @RenderBody()
-</div>
+<main class="site-main">
+    <div class="shell">
+        @RenderBody()
+    </div>
+</main>
 
 <script src="~/js/site.js"></script>
 @RenderSection("Scripts", required: false)

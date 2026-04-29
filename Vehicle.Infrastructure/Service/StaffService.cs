@@ -5,6 +5,7 @@ using Vehicle.Application.Interface.IRepositories;
 using Vehicle.Application.Interface.IServices;
 using Vehicle.Domain.Models;
 using Vehicle.Infrastructure.Data;
+using System.Linq;
 
 namespace Vehicle.Infrastructure.Service;
 
@@ -80,5 +81,27 @@ public class StaffService : IStaffService
             Message = "Customer registered successfully."
         });
     }
-}
 
+    public async Task<IReadOnlyList<StaffCustomerSearchResultDto>> SearchCustomersAsync(string search, int take = 20)
+    {
+        var customers = await _customerRepository.SearchAsync(search, take);
+
+        return customers.Select(c => new StaffCustomerSearchResultDto
+        {
+            CustomerId = c.CustomerID,
+            UserId = c.UserID,
+            FullName = c.User?.FullName ?? "",
+            Email = c.User?.Email ?? "",
+            PhoneNumber = c.User?.PhoneNumber,
+            Vehicles = (c.Vehicles ?? new List<VehicleInfo>())
+                .Select(v => new StaffCustomerVehicleDto
+                {
+                    VehicleId = v.VehicleID,
+                    VehicleNo = v.VehicleNo,
+                    Brand = v.Brand,
+                    Model = v.Model,
+                    Type = v.Type,
+                }).ToList()
+        }).ToList();
+    }
+}

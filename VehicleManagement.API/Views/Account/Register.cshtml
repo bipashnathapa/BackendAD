@@ -1,46 +1,56 @@
 @{
     ViewData["Title"] = "Register";
+    ViewData["BodyClass"] = "auth";
 }
 
-<div class="card">
-    <div class="card-hd">
-        <h1>Create account</h1>
-        <p>Fill in your details to get started.</p>
-    </div>
-    <div class="card-bd">
-        <form id="registerForm" class="form">
-            <div class="field">
-                <label for="fullName">Full name</label>
-                <input id="fullName" type="text" autocomplete="name" required placeholder="Full name" />
+<div class="auth-card">
+    <h1 class="auth-title">CREATE ACCOUNT</h1>
+    <div class="auth-rule" aria-hidden="true"></div>
+
+    <form id="registerForm" class="form one">
+        <div class="field">
+            <label for="fullName">Full name</label>
+            <div class="control">
+                <input id="fullName" type="text" autocomplete="name" required placeholder="Full name" style="padding-left:12px" />
             </div>
-            <div class="field">
-                <label for="email">Email</label>
-                <input id="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+        </div>
+        <div class="field">
+            <label for="email">Email</label>
+            <div class="control">
+                <input id="email" type="email" autocomplete="email" required placeholder="you@example.com" style="padding-left:12px" />
             </div>
-            <div class="field">
-                <label for="password">Password</label>
-                <input id="password" type="password" autocomplete="new-password" required minlength="6" placeholder="Min 6 characters" />
+        </div>
+        <div class="field">
+            <label for="password">Password</label>
+            <div class="control">
+                <input id="password" type="password" autocomplete="new-password" required minlength="6" placeholder="Password" style="padding-left:12px" />
             </div>
-            <div class="field">
-                <label for="userRole">Account type</label>
-                <select id="userRole" required>
+        </div>
+        <div class="field">
+            <label for="userRole">Account type</label>
+            <div class="control">
+                <select id="userRole" required style="padding-left:12px">
                     <option value="Customer">Customer</option>
                     <option value="Staff">Staff</option>
                 </select>
             </div>
-            <div class="field" style="grid-column: 1 / -1">
-                <label for="address">Address</label>
-                <textarea id="address" autocomplete="street-address" required placeholder="Address"></textarea>
+        </div>
+        <div class="field">
+            <label for="address">Address</label>
+            <div class="control">
+                <input id="address" type="text" autocomplete="street-address" required placeholder="Address" style="padding-left:12px" />
             </div>
+        </div>
 
-            <div class="actions" style="grid-column: 1 / -1">
-                <button class="btn primary" type="submit">Create account</button>
-                <a class="btn" href="/login">Already have an account?</a>
-            </div>
-        </form>
+        <div class="actions">
+            <button class="btn primary" type="submit" style="width:100%;">CREATE</button>
+        </div>
+        <div class="actions" style="justify-content:center;margin-top:12px;">
+            <a href="/login" class="nav-link">Already have an account?</a>
+        </div>
+    </form>
 
-        <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </div>
 
 @section Scripts {

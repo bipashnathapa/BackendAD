@@ -26,4 +26,11 @@ public class StaffApiController : ControllerBase
 
         return BadRequest(result.Errors);
     }
+
+    [HttpGet("customers")]
+    public async Task<IActionResult> SearchCustomers([FromQuery] string search, [FromQuery] int take = 20)
+    {
+        var results = await _staffService.SearchCustomersAsync(search, take);
+        return Ok(results);
+    }
 }

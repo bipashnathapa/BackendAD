@@ -1,29 +1,48 @@
 @{
     ViewData["Title"] = "Login";
+    ViewData["BodyClass"] = "auth";
 }
 
-<div class="card">
-    <div class="card-hd">
-        <h1>Sign in</h1>
-        <p>Use your email and password.</p>
-    </div>
-    <div class="card-bd">
-        <form id="loginForm" class="form one">
-            <div class="field">
-                <label for="email">Email</label>
-                <input id="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+<div class="auth-card">
+    <h1 class="auth-title">CUSTOMER LOGIN</h1>
+    <div class="auth-rule" aria-hidden="true"></div>
+
+    <form id="loginForm" class="form one">
+        <div class="field">
+            <label for="email">Email</label>
+            <div class="control">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </span>
+                <input id="email" type="email" autocomplete="email" required placeholder="Enter username" />
             </div>
-            <div class="field">
-                <label for="password">Password</label>
-                <input id="password" type="password" autocomplete="current-password" required placeholder="••••••••" />
+        </div>
+
+        <div class="field">
+            <label for="password">Password</label>
+            <div class="control">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </span>
+                <input id="password" type="password" autocomplete="current-password" required placeholder="Enter Password" />
             </div>
-            <div class="actions">
-                <button class="btn primary" type="submit">Sign in</button>
-                <a class="btn" href="/register">Create account</a>
-            </div>
-        </form>
-        <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn primary" type="submit" style="width:100%;">LOGIN</button>
+        </div>
+        <div class="actions" style="justify-content:center;margin-top:12px;">
+            <a href="/register" class="nav-link">Create account</a>
+        </div>
+    </form>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </div>
 
 @section Scripts {
@@ -40,10 +59,17 @@
                     method: "POST",
                     body: JSON.stringify({ email, password }),
                 });
+                
+                console.log("Token received:", data.token); // Debug check
+               
+              
+
                 window.VM.setToken(data.token, email);
                 window.VM.showToast("ok", data.message || "Login successful");
+
                 const role = (window.VM.getUserRole() || "").toLowerCase();
                 const nextUrl = role === "staff" ? "/staff" : "/customer";
+
                 window.VM.wireNav();
                 setTimeout(() => window.location.href = nextUrl, 450);
             } catch (err) {

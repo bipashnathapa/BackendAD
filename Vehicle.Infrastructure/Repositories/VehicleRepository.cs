@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Vehicle.Application.Interface.IRepositories;
 using Vehicle.Domain.Models;
 using Vehicle.Infrastructure.Data;
@@ -17,5 +18,12 @@ public class VehicleRepository : IVehicleRepository
     {
         await _context.Vehicles.AddAsync(vehicle);
         await _context.SaveChangesAsync();
+    }
+    
+    public async Task<IEnumerable<VehicleInfo>> GetVehiclesByCustomerIdAsync(int customerId)
+    {
+        return await _context.Vehicles
+            .Where(v => v.CustomerID == customerId)
+            .ToListAsync();
     }
 }

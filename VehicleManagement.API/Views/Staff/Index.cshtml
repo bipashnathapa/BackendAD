@@ -5,42 +5,42 @@
 <div class="card">
     <div class="card-hd">
         <h1>Staff Dashboard</h1>
-        <p>Register a customer and their vehicle.</p>
+        <p>Register a customer.</p>
     </div>
     <div class="card-bd">
         <form id="registerCustomerForm" class="form">
             <div class="field">
                 <label for="fullName">Full name</label>
-                <input id="fullName" type="text" required placeholder="Full name" />
+                <div class="control"><input id="fullName" type="text" required placeholder="Full name" style="padding-left:12px" /></div>
             </div>
             <div class="field">
                 <label for="email">Email</label>
-                <input id="email" type="email" required placeholder="customer@example.com" />
+                <div class="control"><input id="email" type="email" required placeholder="customer@example.com" style="padding-left:12px" /></div>
             </div>
             <div class="field">
                 <label for="password">Temporary password</label>
-                <input id="password" type="password" minlength="6" required placeholder="Min 6 characters" />
+                <div class="control"><input id="password" type="password" minlength="6" required placeholder="Min 6 characters" style="padding-left:12px" /></div>
             </div>
             <div class="field">
                 <label for="address">Address</label>
-                <input id="address" type="text" placeholder="Address (optional)" />
+                <div class="control"><input id="address" type="text" placeholder="Address (optional)" style="padding-left:12px" /></div>
             </div>
 
             <div class="field">
                 <label for="vehicleNo">Vehicle No</label>
-                <input id="vehicleNo" type="text" required placeholder="BA 12 PA 3456" />
+                <div class="control"><input id="vehicleNo" type="text" required placeholder="BA 12 PA 3456" style="padding-left:12px" /></div>
             </div>
             <div class="field">
                 <label for="type">Type</label>
-                <input id="type" type="text" required placeholder="Bike / Car / SUV" />
+                <div class="control"><input id="type" type="text" required placeholder="Bike / Car / SUV" style="padding-left:12px" /></div>
             </div>
             <div class="field">
                 <label for="brand">Brand</label>
-                <input id="brand" type="text" required placeholder="Honda / Toyota" />
+                <div class="control"><input id="brand" type="text" required placeholder="Honda / Toyota" style="padding-left:12px" /></div>
             </div>
             <div class="field">
                 <label for="model">Model</label>
-                <input id="model" type="text" required placeholder="Civic / R15" />
+                <div class="control"><input id="model" type="text" required placeholder="Civic / R15" style="padding-left:12px" /></div>
             </div>
 
             <div class="actions" style="grid-column: 1 / -1">
@@ -49,6 +49,41 @@
         </form>
 
         <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+</div>
+
+<div style="height:18px"></div>
+
+<div class="card">
+    <div class="card-hd">
+        <h2>Find Customer</h2>
+        <p>Search by name, email, phone, customer ID, or vehicle number.</p>
+    </div>
+    <div class="card-bd">
+        <form id="searchCustomerForm" class="form one">
+            <div class="field">
+                <label for="search">Search</label>
+                <div class="control"><input id="search" type="text" placeholder="e.g., John / BA 12 PA 3456 / 3" style="padding-left:12px" /></div>
+            </div>
+            <div class="actions">
+                <button class="btn" type="submit">Search</button>
+            </div>
+        </form>
+
+        <div style="height:12px"></div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Customer ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Vehicles</th>
+                </tr>
+            </thead>
+            <tbody id="customerResults"></tbody>
+        </table>
     </div>
 </div>
 
@@ -82,6 +117,50 @@
                 window.VM.showToast("ok", data.message || "Customer registered");
             } catch (err) {
                 window.VM.showToast("bad", err.message || "Request failed");
+            }
+        });
+
+        const resultsBody = document.getElementById("customerResults");
+
+        function renderResults(items) {
+            if (!items || items.length === 0) {
+                resultsBody.innerHTML = '<tr><td colspan="5" class="table-empty">No results</td></tr>';
+                return;
+            }
+
+            resultsBody.innerHTML = items.map(c => {
+                const vehicles = (c.vehicles || []).map(v => v.vehicleNo).filter(Boolean).join(", ");
+                return `
+                    <tr>
+                        <td>${c.customerId}</td>
+                        <td>${escapeHtml(c.fullName || "")}</td>
+                        <td>${escapeHtml(c.email || "")}</td>
+                        <td>${escapeHtml(c.phoneNumber || "")}</td>
+                        <td>${escapeHtml(vehicles)}</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll("\"", "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        document.getElementById("searchCustomerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const search = document.getElementById("search").value.trim();
+            if (!search) return;
+
+            try {
+                const results = await window.VM.apiJson(`/api/staff/customers?search=${encodeURIComponent(search)}`);
+                renderResults(results);
+            } catch (err) {
+                window.VM.showToast("bad", err.message || "Search failed");
             }
         });
     </script>
