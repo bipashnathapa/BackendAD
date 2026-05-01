@@ -21,4 +21,7 @@ public class VehicleInfo
     
     [ForeignKey("CustomerID")]
     public Customer Customer { get; set; }
+
+    public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public ICollection<PartRequest> PartRequests { get; set; } = new List<PartRequest>();
 }

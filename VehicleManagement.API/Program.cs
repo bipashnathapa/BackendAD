@@ -44,6 +44,8 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerVehicleService, CustomerVehicleService>();
+builder.Services.AddScoped<ICustomerServiceRepository, CustomerServiceRepository>();
+builder.Services.AddScoped<ICustomerServiceService, CustomerServiceService>();
 
 // AUTHENTICATION
 builder.Services.AddAuthentication(options =>
