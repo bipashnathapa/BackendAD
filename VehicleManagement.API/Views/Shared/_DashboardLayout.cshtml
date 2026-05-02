@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] • Vehicle Management Dashboard</title>
+    <link rel="stylesheet" href="~/css/dashboard.css" />
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="dash-sidebar">
+        <div class="dash-brand">
+            <i data-lucide="car"></i>
+            <span>VehicleMgmt</span>
+        </div>
+        
+        <div class="dash-user-info">
+            <h3>Sarah Jenkins</h3>
+            <p>Premium Member</p>
+        </div>
+
+        <nav class="dash-nav">
+            <a href="/Customer/Dashboard" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Dashboard", StringComparison.OrdinalIgnoreCase) || string.Equals((string)ViewContext.RouteData.Values["Action"], "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                <i data-lucide="layout-dashboard"></i>
+                Dashboard
+            </a>
+            <a href="/Customer/Settings" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Settings", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                <i data-lucide="settings"></i>
+                Settings
+            </a>
+            <a href="/" class="dash-nav-item">
+                <i data-lucide="home"></i>
+                Back to Site
+            </a>
+        </nav>
+
+        <div class="dash-sidebar-footer">
+            <button class="dash-btn-primary">
+                <i data-lucide="log-out"></i>
+                Log Out
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="dash-main">
+        <!-- Header -->
+        <header class="dash-header">
+            <div class="dash-search">
+                <i data-lucide="search" style="color:var(--dash-muted);width:16px;"></i>
+                <input type="text" placeholder="Search vehicles, services, orders..." />
+            </div>
+            
+            <div class="dash-header-actions">
+                <div class="dash-loyalty">
+                    <i data-lucide="award" style="width:16px;"></i>
+                    Gold Tier
+                </div>
+                
+                <button class="dash-icon-btn" aria-label="Notifications">
+                    <i data-lucide="bell"></i>
+                </button>
+                <button class="dash-icon-btn" aria-label="Messages">
+                    <i data-lucide="message-square"></i>
+                </button>
+                
+                <img src="https://ui-avatars.com/api/?name=Sarah+Jenkins&background=f97316&color=fff&rounded=true" alt="User Avatar" style="width: 36px; height: 36px; border-radius: 50%; cursor: pointer;" />
+            </div>
+        </header>
+
+        <!-- Dynamic Content -->
+        <main class="dash-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
