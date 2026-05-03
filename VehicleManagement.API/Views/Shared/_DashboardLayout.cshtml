@@ -29,6 +29,10 @@
                 <i data-lucide="layout-dashboard"></i>
                 Dashboard
             </a>
+            <a href="/Customer/History" class="dash-nav-item @(string.Equals(currentAction, "History", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                <i data-lucide="history"></i>
+                History
+            </a>
             <a href="/Customer/Settings" class="dash-nav-item @(string.Equals(currentAction, "Settings", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="settings"></i>
                 Settings
