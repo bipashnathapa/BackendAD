@@ -52,6 +52,28 @@
     return "";
   }
 
+  function getUserDisplayNameFromToken(token) {
+    const claims = parseJwt(token);
+    if (!claims) return "";
+
+    const candidates = [
+      "name",
+      "unique_name",
+      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+      "email",
+    ];
+
+    for (const key of candidates) {
+      const val = claims[key];
+      if (!val) continue;
+      if (Array.isArray(val)) return String(val[0] || "");
+      return String(val);
+    }
+
+    return "";
+  }
+
   function getToken() {
     return localStorage.getItem(storageKeys.token) || "";
   }
@@ -154,6 +176,7 @@
     storageKeys,
     parseJwt,
     getUserRole: () => getUserRoleFromToken(getToken()),
+    getUserDisplayName: () => getUserDisplayNameFromToken(getToken()),
   };
 
   document.addEventListener("DOMContentLoaded", () => {
