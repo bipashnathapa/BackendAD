@@ -1,3 +1,24 @@
+@using Microsoft.AspNetCore.Identity
+@using Vehicle.Domain.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+    
+    // For demonstration: If no user is authenticated, fetch the first user from the DB
+    // Preferring a 'Customer' role for the Customer Dashboard context.
+    if (currentUser == null)
+    {
+        currentUser = UserManager.Users.FirstOrDefault(u => u.UserRole == "Customer") 
+                      ?? UserManager.Users.FirstOrDefault();
+    }
+    
+    var fullName = currentUser?.FullName ?? "Sarah Jenkins (Demo)";
+    var userRole = currentUser?.UserRole ?? "Premium Member";
+    var initials = string.Join("", fullName.Split(' ').Select(n => (n.Length > 0 ? n[0].ToString() : "")));
+}
+
 <!doctype html>
 <html lang="en">
 <head>
