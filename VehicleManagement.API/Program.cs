@@ -44,6 +44,8 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerVehicleService, CustomerVehicleService>();
+builder.Services.AddScoped<ICustomerServiceRepository, CustomerServiceRepository>();
+builder.Services.AddScoped<ICustomerServiceService, CustomerServiceService>();
 
 // AUTHENTICATION
 builder.Services.AddAuthentication(options =>
@@ -76,6 +78,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    // Auto-apply EF Core migrations in development to prevent missing-table 500s.
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
 }
 
 app.UseHttpsRedirection();
