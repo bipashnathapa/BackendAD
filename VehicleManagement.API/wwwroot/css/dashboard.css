@@ -32,6 +32,94 @@ body.dashboard-layout {
     overflow: hidden;
 }
 
+/* Dashboard toast (reuses window.VM.showToast which toggles ok/bad/show) */
+.dash-toast{
+    display: none;
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--dash-border);
+    background: var(--dash-surface);
+    box-shadow: var(--dash-shadow-sm);
+    font-size: 13px;
+}
+.dash-toast.show{display:block}
+.dash-toast.ok{border-color: #bbf7d0}
+.dash-toast.bad{border-color: #fecaca}
+
+/* Generic card pieces for new sections */
+.dash-card-header{
+    padding: 18px 18px 10px;
+    border-bottom: 1px solid var(--dash-border);
+}
+.dash-card-header h3{
+    margin:0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--dash-text);
+}
+.dash-card-header p{
+    margin: 8px 0 0;
+    color: var(--dash-muted);
+    font-size: 13px;
+}
+.dash-card-body{padding: 16px 18px 18px}
+
+.dash-form{display:flex;flex-direction:column;gap: 12px}
+.dash-form-row{display:grid;grid-template-columns: 1fr 1fr; gap: 12px}
+@media (max-width: 980px){
+    .dash-form-row{grid-template-columns: 1fr}
+}
+.dash-field{display:flex;flex-direction:column;gap: 8px}
+.dash-field label{font-size: 12px; font-weight: 600; color: var(--dash-muted)}
+.dash-field input,.dash-field select,.dash-field textarea{
+    width:100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--dash-border);
+    background: var(--dash-surface);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+.dash-field textarea{min-height: 84px; resize: vertical}
+.dash-field input:focus,.dash-field select:focus,.dash-field textarea:focus{
+    border-color: rgba(249,115,22,.55);
+    box-shadow: 0 0 0 4px rgba(249,115,22,.12);
+}
+
+.dash-actions{display:flex;gap: 10px; align-items:center}
+.dash-empty{padding: 14px 8px; text-align:center; color: var(--dash-muted)}
+.dash-table-wrap{overflow:auto}
+.dash-table{
+    width:100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.dash-table th,.dash-table td{
+    text-align:left;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--dash-border);
+    vertical-align: top;
+}
+.dash-table th{
+    font-size: 12px;
+    color: var(--dash-muted);
+    font-weight: 600;
+}
+.dash-badge{
+    display:inline-flex;
+    align-items:center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--dash-border);
+    background: var(--dash-bg);
+    font-size: 12px;
+    color: var(--dash-muted);
+}
+.dash-strong{font-weight: 700; color: var(--dash-text)}
+.dash-sub{font-size: 12px; color: var(--dash-muted); margin-top: 2px}
+
 /* Sidebar */
 .dash-sidebar {
     width: 260px;

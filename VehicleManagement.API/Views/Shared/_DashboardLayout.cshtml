@@ -17,8 +17,8 @@
         </div>
         
         <div class="dash-user-info">
-            <h3>Sarah Jenkins</h3>
-            <p>Premium Member</p>
+            <h3 id="dashUserName">—</h3>
+            <p id="dashUserMeta">Member</p>
         </div>
 
         <nav class="dash-nav">
@@ -37,7 +37,7 @@
         </nav>
 
         <div class="dash-sidebar-footer">
-            <button class="dash-btn-primary">
+            <button class="dash-btn-primary" id="dashLogoutBtn" type="button">
                 <i data-lucide="log-out"></i>
                 Log Out
             </button>
@@ -66,7 +66,7 @@
                     <i data-lucide="message-square"></i>
                 </button>
                 
-                <img src="https://ui-avatars.com/api/?name=Sarah+Jenkins&background=f97316&color=fff&rounded=true" alt="User Avatar" style="width: 36px; height: 36px; border-radius: 50%; cursor: pointer;" />
+                <img id="dashAvatar" src="https://ui-avatars.com/api/?name=User&background=f97316&color=fff&rounded=true" alt="User Avatar" style="width: 36px; height: 36px; border-radius: 50%; cursor: pointer;" />
             </div>
         </header>
 
@@ -79,6 +79,32 @@
     <!-- Initialize Lucide Icons -->
     <script>
         lucide.createIcons();
+    </script>
+    <script src="~/js/site.js"></script>
+    <script>
+        // Dashboard logout (JWT stored in localStorage)
+        document.addEventListener("DOMContentLoaded", () => {
+            const btn = document.getElementById("dashLogoutBtn");
+            if (!btn || !window.VM) return;
+            btn.addEventListener("click", () => {
+                window.VM.clearAuth();
+                window.location.href = "/login";
+            });
+
+            const nameEl = document.getElementById("dashUserName");
+            const metaEl = document.getElementById("dashUserMeta");
+            const avatarEl = document.getElementById("dashAvatar");
+
+            const displayName = (window.VM.getUserDisplayName?.() || "").trim();
+            const role = (window.VM.getUserRole?.() || "").trim();
+
+            if (nameEl) nameEl.textContent = displayName || "User";
+            if (metaEl) metaEl.textContent = role ? role : "Member";
+            if (avatarEl) {
+                const n = encodeURIComponent(displayName || "User");
+                avatarEl.src = `https://ui-avatars.com/api/?name=${n}&background=f97316&color=fff&rounded=true`;
+            }
+        });
     </script>
     @RenderSection("Scripts", required: false)
 </body>
