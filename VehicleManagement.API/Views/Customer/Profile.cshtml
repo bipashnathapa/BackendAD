@@ -1,0 +1,163 @@
+@using Microsoft.AspNetCore.Identity
+@using Vehicle.Domain.Models
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "_DashboardLayout";
+    
+    var currentUser = await UserManager.GetUserAsync(User);
+    
+    // Fallback to first user for demo
+    if (currentUser == null)
+    {
+        currentUser = UserManager.Users.FirstOrDefault(u => u.UserRole == "Customer") 
+                      ?? UserManager.Users.FirstOrDefault();
+    }
+    
+    var fullName = currentUser?.FullName ?? "Sarah Jenkins (Demo)";
+    var email = currentUser?.Email ?? "sarah.jenkins@example.com";
+    var phone = currentUser?.PhoneNumber ?? "+1 (555) 123-4567";
+    var address = currentUser?.Address ?? "452 West End Ave, New York, NY 10024";
+    var dob = currentUser?.DOB?.ToString("yyyy-MM-dd") ?? "1992-04-12";
+    var role = currentUser?.UserRole ?? "Premium Member";
+    var initials = string.Join("", fullName.Split(' ').Select(n => (n.Length > 0 ? n[0].ToString() : "")));
+}
+
+<div class="dash-page-header">
+    <h1>My Profile</h1>
+    <p>Manage your personal information and preferences.</p>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div style="background-color: #d1fae5; color: #065f46; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-weight: 600; display: flex; align-items: center; gap: 12px; border: 1px solid #10b981;">
+        <i data-lucide="check-circle" style="width: 20px; height: 20px;"></i>
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div style="background-color: #fee2e2; color: #991b1b; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-weight: 600; display: flex; align-items: center; gap: 12px; border: 1px solid #ef4444;">
+        <i data-lucide="alert-circle" style="width: 20px; height: 20px;"></i>
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="dash-grid">
+    <div class="dash-main-col">
+        <div class="dash-card">
+            <div style="padding: 32px;">
+                <h3 style="margin-top: 0; margin-bottom: 24px; font-size: 18px;">Personal Information</h3>
+                <form method="post" action="/Customer/Profile">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Full Name</label>
+                            <input type="text" name="FullName" value="@fullName" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Email Address</label>
+                            <input type="email" name="Email" value="@email" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Phone Number</label>
+                            <input type="tel" name="Phone" value="@phone" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Date of Birth</label>
+                            <input type="date" name="DOB" value="@dob" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 32px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Address</label>
+                        <input type="text" name="Address" value="@address" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 16px;">
+                        <button type="button" class="btn-outline" style="width: auto; padding: 10px 24px;">Cancel</button>
+                        <button type="submit" class="dash-btn-primary" style="width: auto; padding: 10px 24px;">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="dash-card" style="margin-top: 24px;">
+            <div style="padding: 32px;">
+                <h3 style="margin-top: 0; margin-bottom: 24px; font-size: 18px;">Security & Password</h3>
+                <form method="post" action="/Customer/Profile">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Current Password</label>
+                            <input type="password" placeholder="••••••••" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">New Password</label>
+                            <input type="password" placeholder="••••••••" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Confirm New Password</label>
+                            <input type="password" placeholder="••••••••" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end;">
+                        <button type="submit" class="dash-btn-primary" style="width: auto; padding: 10px 24px; background-color: var(--dash-dark-surface);">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Column -->
+    <div class="dash-sidebar-col">
+        <!-- Profile summary card -->
+        <div class="widget" style="text-align: center; padding: 32px 24px;">
+            <div style="width: 96px; height: 96px; border-radius: 50%; background-color: var(--dash-primary-light); color: var(--dash-primary); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 700; margin: 0 auto 16px;">
+                @initials
+            </div>
+            <h3 style="margin: 0 0 4px; font-size: 18px;">@fullName</h3>
+            <p style="margin: 0 0 16px; color: var(--dash-muted); font-size: 14px;">@role since @(currentUser?.EmailConfirmed == true ? "2021" : "2024")</p>
+            <span class="status-badge">Verified Account</span>
+        </div>
+
+        <div class="widget">
+            <div class="widget-title">
+                <h3>Preferences</h3>
+            </div>
+            
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <div>
+                    <h4 style="margin: 0 0 4px; font-size: 14px; font-weight: 600;">Email Notifications</h4>
+                    <p style="margin: 0; font-size: 12px; color: var(--dash-muted);">Service reminders & offers</p>
+                </div>
+                <div style="width: 40px; height: 24px; background-color: var(--dash-success); border-radius: 12px; position: relative; cursor: pointer;">
+                    <div style="width: 20px; height: 20px; background-color: white; border-radius: 50%; position: absolute; right: 2px; top: 2px; box-shadow: var(--dash-shadow-sm);"></div>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <div>
+                    <h4 style="margin: 0 0 4px; font-size: 14px; font-weight: 600;">SMS Alerts</h4>
+                    <p style="margin: 0; font-size: 12px; color: var(--dash-muted);">Important status updates</p>
+                </div>
+                <div style="width: 40px; height: 24px; background-color: var(--dash-success); border-radius: 12px; position: relative; cursor: pointer;">
+                    <div style="width: 20px; height: 20px; background-color: white; border-radius: 50%; position: absolute; right: 2px; top: 2px; box-shadow: var(--dash-shadow-sm);"></div>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h4 style="margin: 0 0 4px; font-size: 14px; font-weight: 600;">Two-Factor Auth</h4>
+                    <p style="margin: 0; font-size: 12px; color: var(--dash-muted);">Extra account security</p>
+                </div>
+                <div style="width: 40px; height: 24px; background-color: var(--dash-border); border-radius: 12px; position: relative; cursor: pointer;">
+                    <div style="width: 20px; height: 20px; background-color: white; border-radius: 50%; position: absolute; left: 2px; top: 2px; box-shadow: var(--dash-shadow-sm);"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,3 +1,24 @@
+@using Microsoft.AspNetCore.Identity
+@using Vehicle.Domain.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+    
+    // For demonstration: If no user is authenticated, fetch the first user from the DB
+    // Preferring a 'Customer' role for the Customer Dashboard context.
+    if (currentUser == null)
+    {
+        currentUser = UserManager.Users.FirstOrDefault(u => u.UserRole == "Customer") 
+                      ?? UserManager.Users.FirstOrDefault();
+    }
+    
+    var fullName = currentUser?.FullName ?? "Sarah Jenkins (Demo)";
+    var userRole = currentUser?.UserRole ?? "Premium Member";
+    var initials = string.Join("", fullName.Split(' ').Select(n => (n.Length > 0 ? n[0].ToString() : "")));
+}
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -15,11 +36,7 @@
             <i data-lucide="car"></i>
             <span>VehicleMgmt</span>
         </div>
-        
-        <div class="dash-user-info">
-            <h3>Sarah Jenkins</h3>
-            <p>Premium Member</p>
-        </div>
+
 
         <nav class="dash-nav">
             <a href="/Customer/Dashboard" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Dashboard", StringComparison.OrdinalIgnoreCase) || string.Equals((string)ViewContext.RouteData.Values["Action"], "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
@@ -36,7 +53,16 @@
             </a>
         </nav>
 
-        <div class="dash-sidebar-footer">
+        <div class="dash-sidebar-footer" style="padding: 1.5rem; border-top: 1px solid var(--dash-border); margin-top: auto;">
+            <div class="dash-user-footer" style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background-color: var(--dash-primary-light); color: var(--dash-primary); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">
+                    @initials
+                </div>
+                <div style="overflow: hidden;">
+                    <h4 style="margin: 0; font-size: 0.875rem; font-weight: 600; color: var(--dash-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@fullName</h4>
+                    <p style="margin: 0; font-size: 0.75rem; color: var(--dash-muted);">@userRole</p>
+                </div>
+            </div>
             <button class="dash-btn-primary">
                 <i data-lucide="log-out"></i>
                 Log Out
@@ -66,7 +92,9 @@
                     <i data-lucide="message-square"></i>
                 </button>
                 
-                <img src="https://ui-avatars.com/api/?name=Sarah+Jenkins&background=f97316&color=fff&rounded=true" alt="User Avatar" style="width: 36px; height: 36px; border-radius: 50%; cursor: pointer;" />
+                <a href="/Customer/Profile">
+                    <img src="https://ui-avatars.com/api/?name=@(fullName.Replace(" ", "+"))&background=f97316&color=fff&rounded=true" alt="User Avatar" style="width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: block;" />
+                </a>
             </div>
         </header>
 
