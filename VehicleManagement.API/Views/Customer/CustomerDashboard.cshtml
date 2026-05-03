@@ -4,180 +4,426 @@
 }
 
 <div class="dash-page-header">
-    <h1>Vehicle Overview</h1>
-    <p>Managing your 2022 Performance Sedan</p>
+    <h1>Dashboard</h1>
+    <p>Manage your vehicles, appointments, requests, and reviews.</p>
 </div>
+
+<div id="toast" class="dash-toast" role="status" aria-live="polite"></div>
 
 <div class="dash-grid">
-    <!-- Main Content Column -->
     <div class="dash-main-col">
-        <!-- Vehicle Overview Dark Card -->
-        <div class="dash-card dash-card-dark vehicle-overview" style="margin-bottom: 24px;">
-            <div class="health-score">
-                <div class="health-score-inner">
-                    <h2>82<span style="font-size: 24px;">%</span></h2>
-                    <span>Health Score</span>
-                </div>
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <h3>My Vehicles</h3>
+                <p>Your registered vehicles.</p>
             </div>
-            
-            <div class="overview-stats">
-                <div class="alert-box">
-                    <i data-lucide="triangle-alert" class="alert-icon"></i>
-                    <div class="alert-content">
-                        <h4>Predictive Failure Alert</h4>
-                        <p>Brake Pad failure predicted in 500 miles. Schedule inspection soon.</p>
-                    </div>
-                </div>
-                
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <p>Tire Pressure</p>
-                        <h3>32 PSI</h3>
-                        <span class="stat-status status-optimal">Optimal</span>
-                    </div>
-                    <div class="stat-item">
-                        <p>Oil Life</p>
-                        <h3>45%</h3>
-                        <span class="stat-status status-warning">Monitor</span>
-                    </div>
-                    <div class="stat-item">
-                        <p>Battery</p>
-                        <h3>12.6V</h3>
-                        <span class="stat-status status-optimal">Strong</span>
-                    </div>
+            <div class="dash-card-body">
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                        <tr>
+                            <th>Vehicle No</th>
+                            <th>Brand</th>
+                            <th>Model</th>
+                            <th>Type</th>
+                        </tr>
+                        </thead>
+                        <tbody id="vehiclesTbody"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- History Table -->
-        <div class="dash-card history-section">
-            <div class="history-header">
-                <h3>History</h3>
-                <div class="history-actions">
-                    <button>Filter</button>
-                    <button>Export CSV</button>
+        <div style="height:18px"></div>
+
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <h3>Appointments</h3>
+                <p>Book an appointment and view upcoming appointments.</p>
+            </div>
+            <div class="dash-card-body">
+                <form id="bookAppointmentForm" class="dash-form">
+                    <div class="dash-form-row">
+                        <div class="dash-field">
+                            <label for="apptVehicleId">Vehicle</label>
+                            <select id="apptVehicleId" required></select>
+                        </div>
+                        <div class="dash-field">
+                            <label for="apptDate">Date &amp; time</label>
+                            <input id="apptDate" type="datetime-local" required />
+                        </div>
+                    </div>
+                    <div class="dash-form-row">
+                        <div class="dash-field">
+                            <label for="apptServiceType">Service type</label>
+                            <input id="apptServiceType" type="text" maxlength="100" placeholder="e.g., Annual Maintenance" required />
+                        </div>
+                    </div>
+                    <div class="dash-form-row">
+                        <div class="dash-field">
+                            <label for="apptNotes">Notes (optional)</label>
+                            <textarea id="apptNotes" maxlength="500" placeholder="Add notes…"></textarea>
+                        </div>
+                    </div>
+                    <div class="dash-actions">
+                        <button class="dash-btn-primary" type="submit">Book Appointment</button>
+                    </div>
+                </form>
+
+                <div style="height:14px"></div>
+
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Vehicle</th>
+                            <th>Service</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody id="appointmentsTbody"></tbody>
+                    </table>
                 </div>
             </div>
-            
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Item/Service</th>
-                        <th>Order #</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Invoice</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><div style="color:var(--dash-text);font-weight:500;">Sep 14,</div><div style="color:var(--dash-muted);font-size:12px;">2023</div></td>
-                        <td><strong style="color:var(--dash-text);">Premium Synthetic Oil Change</strong></td>
-                        <td style="color:var(--dash-muted);">#ORD-90210</td>
-                        <td><strong>$124.50</strong></td>
-                        <td><span class="status-badge">Completed</span></td>
-                        <td><a href="#" class="pdf-link"><i data-lucide="file-text" style="width:14px;height:14px;"></i> PDF</a></td>
-                    </tr>
-                    <tr>
-                        <td><div style="color:var(--dash-text);font-weight:500;">Aug 22,</div><div style="color:var(--dash-muted);font-size:12px;">2023</div></td>
-                        <td><strong style="color:var(--dash-text);">Performance Air Filter</strong></td>
-                        <td style="color:var(--dash-muted);">#ORD-88742</td>
-                        <td><strong>$68.00</strong></td>
-                        <td><span class="status-badge" style="color:#059669;background-color:#d1fae5;">Delivered</span></td>
-                        <td><a href="#" class="pdf-link"><i data-lucide="file-text" style="width:14px;height:14px;"></i> PDF</a></td>
-                    </tr>
-                    <tr>
-                        <td><div style="color:var(--dash-text);font-weight:500;">Jul 01,</div><div style="color:var(--dash-muted);font-size:12px;">2023</div></td>
-                        <td><strong style="color:var(--dash-text);">Brake Fluid Flush</strong></td>
-                        <td style="color:var(--dash-muted);">#ORD-86512</td>
-                        <td><strong>$210.00</strong></td>
-                        <td><span class="status-badge">Completed</span></td>
-                        <td><a href="#" class="pdf-link"><i data-lucide="file-text" style="width:14px;height:14px;"></i> PDF</a></td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
-    <!-- Sidebar Column -->
-    <div class="dash-sidebar-col">
-        <!-- Loyalty Progress -->
-        <div class="loyalty-progress-container">
-            <div class="loyalty-progress-header">
-                <span>LOYALTY PROGRESS</span>
-                <span>$3,240 / $5,000</span>
+    <div class="dash-side-col">
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <h3>Unavailable Part Request</h3>
+                <p>Request a part that isn’t listed.</p>
             </div>
-            <div class="progress-bar-bg">
-                <div class="progress-bar-fill"></div>
+            <div class="dash-card-body">
+                <form id="partRequestForm" class="dash-form">
+                    <div class="dash-field">
+                        <label for="partVehicleId">Vehicle (optional)</label>
+                        <select id="partVehicleId"></select>
+                    </div>
+                    <div class="dash-field">
+                        <label for="partName">Part name</label>
+                        <input id="partName" type="text" maxlength="120" required placeholder="e.g., Brake pad set" />
+                    </div>
+                    <div class="dash-field">
+                        <label for="vehicleModel">Vehicle model (optional)</label>
+                        <input id="vehicleModel" type="text" maxlength="80" placeholder="e.g., Corolla 2018" />
+                    </div>
+                    <div class="dash-form-row">
+                        <div class="dash-field">
+                            <label for="quantity">Quantity</label>
+                            <input id="quantity" type="number" min="1" max="100" value="1" required />
+                        </div>
+                    </div>
+                    <div class="dash-field">
+                        <label for="partNotes">Notes (optional)</label>
+                        <textarea id="partNotes" maxlength="500" placeholder="Add notes…"></textarea>
+                    </div>
+                    <div class="dash-actions">
+                        <button class="dash-btn-primary" type="submit">Submit Request</button>
+                    </div>
+                </form>
+
+                <div style="height:14px"></div>
+
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                        <tr>
+                            <th>Part</th>
+                            <th>Qty</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody id="partsTbody"></tbody>
+                    </table>
+                </div>
             </div>
-            <p>Spend another $1,760 to unlock your 10% Gold Discount.</p>
         </div>
 
-        <!-- Upcoming -->
-        <div class="widget">
-            <div class="widget-title">
-                <h3>Upcoming</h3>
-                <i data-lucide="calendar" style="color:var(--dash-muted);"></i>
-            </div>
-            
-            <div class="appointment-item">
-                <div class="date-badge">
-                    <span class="date-month">Oct</span>
-                    <span class="date-day">12</span>
-                </div>
-                <div class="appointment-details">
-                    <h4>Annual Maintenance</h4>
-                    <p>09:30 AM • Downtown Service Center</p>
-                </div>
-            </div>
-            
-            <div class="appointment-item">
-                <div class="date-badge muted">
-                    <span class="date-month">Nov</span>
-                    <span class="date-day">05</span>
-                </div>
-                <div class="appointment-details">
-                    <h4 style="color:var(--dash-muted);">Tire Rotation</h4>
-                    <p>To be scheduled</p>
-                </div>
-            </div>
-            
-            <button class="btn-dark">Book New Appointment</button>
-        </div>
+        <div style="height:18px"></div>
 
-        <!-- Special Request -->
-        <div class="widget special-request">
-            <div class="widget-title">
-                <h3>Special Request</h3>
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <h3>Service Reviews</h3>
+                <p>Leave a review after a service.</p>
             </div>
-            <p>Can't find a specific OEM part? Our procurement team can source rare and vintage components for you.</p>
-            
-            <div class="request-card">
-                <div class="request-icon">
-                    <i data-lucide="package" style="color:var(--dash-muted);"></i>
-                </div>
-                <div class="request-details">
-                    <h4>M-Series Carbon Spoiler</h4>
-                    <p>Requested 2 days ago</p>
-                </div>
-                <span class="status-searching">SEARCHING</span>
-            </div>
-            
-            <button class="btn-outline">
-                <i data-lucide="plus-circle" style="width:16px;"></i>
-                New Part Request
-            </button>
-        </div>
+            <div class="dash-card-body">
+                <form id="reviewForm" class="dash-form">
+                    <div class="dash-field">
+                        <label for="reviewAppointmentId">Appointment (optional)</label>
+                        <select id="reviewAppointmentId"></select>
+                    </div>
+                    <div class="dash-form-row">
+                        <div class="dash-field">
+                            <label for="rating">Rating</label>
+                            <select id="rating" required>
+                                <option value="5">5</option>
+                                <option value="4">4</option>
+                                <option value="3">3</option>
+                                <option value="2">2</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="dash-field">
+                        <label for="comment">Comment</label>
+                        <textarea id="comment" maxlength="800" required placeholder="Write your feedback…"></textarea>
+                    </div>
+                    <div class="dash-actions">
+                        <button class="dash-btn-primary" type="submit">Submit Review</button>
+                    </div>
+                </form>
 
-        <!-- Vehicle Match -->
-        <div class="vehicle-match-card">
-            <img src="https://images.unsplash.com/photo-1617531653332-bd46c24f2068?q=80&w=2115&auto=format&fit=crop" alt="Performance Sedan Engine" />
-            <div class="vehicle-match-overlay">
-                <span>VEHICLE MATCH</span>
-                <h3>2022 Performance Sedan</h3>
-                <p>Full OEM Part Compatibility Verified</p>
+                <div style="height:14px"></div>
+
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                        <tr>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                        </tr>
+                        </thead>
+                        <tbody id="reviewsTbody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Guard
+        const token = localStorage.getItem(window.VM?.storageKeys?.token || "vm_token") || "";
+        const role = (window.VM?.getUserRole?.() || "").toLowerCase();
+        if (!token) window.location.href = "/login";
+        if (role === "staff") window.location.href = "/staff";
+
+        const el = (id) => document.getElementById(id);
+
+        function escapeHtml(str) {
+            return String(str ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll("\"", "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function fmtDate(iso) {
+            try {
+                const d = new Date(iso);
+                return d.toLocaleString();
+            } catch {
+                return iso;
+            }
+        }
+
+        function populateVehicleSelects(vehicles) {
+            const apptSel = el("apptVehicleId");
+            const partSel = el("partVehicleId");
+
+            apptSel.innerHTML = "";
+            partSel.innerHTML = `<option value="">No vehicle</option>`;
+
+            if (!vehicles || vehicles.length === 0) {
+                apptSel.innerHTML = `<option value="" disabled selected>No vehicles found</option>`;
+                return;
+            }
+
+            for (const v of vehicles) {
+                const label = `${v.vehicleNo} • ${v.brand}${v.model ? " " + v.model : ""}`;
+                apptSel.insertAdjacentHTML("beforeend", `<option value="${v.vehicleId}">${escapeHtml(label)}</option>`);
+                partSel.insertAdjacentHTML("beforeend", `<option value="${v.vehicleId}">${escapeHtml(label)}</option>`);
+            }
+        }
+
+        function populateAppointmentSelect(appointments) {
+            const sel = el("reviewAppointmentId");
+            sel.innerHTML = `<option value="">No appointment</option>`;
+            for (const a of (appointments || [])) {
+                const label = `${fmtDate(a.appointmentDate)} • ${a.vehicleNo} • ${a.serviceType}`;
+                sel.insertAdjacentHTML("beforeend", `<option value="${a.appointmentId}">${escapeHtml(label)}</option>`);
+            }
+        }
+
+        function renderVehicles(vehicles) {
+            const tbody = el("vehiclesTbody");
+            if (!vehicles || vehicles.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="dash-empty">No vehicles found.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = vehicles.map(v => `
+                <tr>
+                    <td>${escapeHtml(v.vehicleNo)}</td>
+                    <td>${escapeHtml(v.brand)}</td>
+                    <td>${escapeHtml(v.model)}</td>
+                    <td>${escapeHtml(v.type)}</td>
+                </tr>
+            `).join("");
+        }
+
+        function renderAppointments(items) {
+            const tbody = el("appointmentsTbody");
+            if (!items || items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="dash-empty">No appointments yet.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = items.map(a => `
+                <tr>
+                    <td>${escapeHtml(fmtDate(a.appointmentDate))}</td>
+                    <td>${escapeHtml(a.vehicleNo)}</td>
+                    <td>${escapeHtml(a.serviceType)}</td>
+                    <td><span class="dash-badge">${escapeHtml(a.status)}</span></td>
+                </tr>
+            `).join("");
+        }
+
+        function renderParts(items) {
+            const tbody = el("partsTbody");
+            if (!items || items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="dash-empty">No part requests yet.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = items.map(p => `
+                <tr>
+                    <td>
+                        <div class="dash-strong">${escapeHtml(p.partName)}</div>
+                        <div class="dash-sub">${escapeHtml(p.vehicleNo || "")}</div>
+                    </td>
+                    <td>${escapeHtml(p.quantity)}</td>
+                    <td><span class="dash-badge">${escapeHtml(p.status)}</span></td>
+                </tr>
+            `).join("");
+        }
+
+        function renderReviews(items) {
+            const tbody = el("reviewsTbody");
+            if (!items || items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" class="dash-empty">No reviews yet.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = items.map(r => `
+                <tr>
+                    <td>${"★".repeat(Math.max(0, Math.min(5, Number(r.rating) || 0)))}</td>
+                    <td>${escapeHtml(r.comment)}</td>
+                </tr>
+            `).join("");
+        }
+
+        async function loadAll() {
+            const [vehicles, appointments, parts, reviews] = await Promise.all([
+                window.VM.apiJson("/api/customer/vehicles"),
+                window.VM.apiJson("/api/customer/services/appointments"),
+                window.VM.apiJson("/api/customer/services/parts"),
+                window.VM.apiJson("/api/customer/services/reviews"),
+            ]);
+
+            renderVehicles(vehicles);
+            populateVehicleSelects(vehicles);
+
+            renderAppointments(appointments);
+            populateAppointmentSelect(appointments);
+
+            renderParts(parts);
+            renderReviews(reviews);
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                await loadAll();
+            } catch (err) {
+                window.VM.showToast("bad", err.message || "Failed to load dashboard data");
+            }
+
+            el("bookAppointmentForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const vehicleId = Number(el("apptVehicleId").value);
+                const dtLocal = el("apptDate").value;
+                const serviceType = el("apptServiceType").value.trim();
+                const notes = el("apptNotes").value.trim();
+
+                if (!vehicleId || !dtLocal || !serviceType) return;
+
+                const appointmentDate = new Date(dtLocal).toISOString();
+
+                try {
+                    await window.VM.apiJson("/api/customer/services/appointments", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            vehicleId,
+                            appointmentDate,
+                            serviceType,
+                            notes: notes ? notes : null,
+                        }),
+                    });
+                    window.VM.showToast("ok", "Appointment booked");
+                    el("bookAppointmentForm").reset();
+                    const appointments = await window.VM.apiJson("/api/customer/services/appointments");
+                    renderAppointments(appointments);
+                    populateAppointmentSelect(appointments);
+                } catch (err) {
+                    window.VM.showToast("bad", err.message || "Unable to book appointment");
+                }
+            });
+
+            el("partRequestForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const vehicleIdRaw = el("partVehicleId").value;
+                const partName = el("partName").value.trim();
+                const vehicleModel = el("vehicleModel").value.trim();
+                const quantity = Number(el("quantity").value);
+                const notes = el("partNotes").value.trim();
+
+                if (!partName || !Number.isFinite(quantity) || quantity <= 0) return;
+
+                try {
+                    await window.VM.apiJson("/api/customer/services/parts", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            vehicleId: vehicleIdRaw ? Number(vehicleIdRaw) : null,
+                            partName,
+                            vehicleModel: vehicleModel ? vehicleModel : null,
+                            quantity,
+                            notes: notes ? notes : null,
+                        }),
+                    });
+                    window.VM.showToast("ok", "Request submitted");
+                    el("partRequestForm").reset();
+                    const parts = await window.VM.apiJson("/api/customer/services/parts");
+                    renderParts(parts);
+                } catch (err) {
+                    window.VM.showToast("bad", err.message || "Unable to request part");
+                }
+            });
+
+            el("reviewForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const appointmentIdRaw = el("reviewAppointmentId").value;
+                const rating = Number(el("rating").value);
+                const comment = el("comment").value.trim();
+                if (!comment || !Number.isFinite(rating)) return;
+
+                try {
+                    await window.VM.apiJson("/api/customer/services/reviews", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            appointmentId: appointmentIdRaw ? Number(appointmentIdRaw) : null,
+                            rating,
+                            comment,
+                        }),
+                    });
+                    window.VM.showToast("ok", "Review submitted");
+                    el("reviewForm").reset();
+                    const reviews = await window.VM.apiJson("/api/customer/services/reviews");
+                    renderReviews(reviews);
+                } catch (err) {
+                    window.VM.showToast("bad", err.message || "Unable to submit review");
+                }
+            });
+        });
+    </script>
+}
+

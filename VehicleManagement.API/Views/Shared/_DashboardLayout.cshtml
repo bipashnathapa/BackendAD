@@ -36,7 +36,11 @@
             <i data-lucide="car"></i>
             <span>VehicleMgmt</span>
         </div>
-
+        
+        <div class="dash-user-info">
+            <h3 id="dashUserName">—</h3>
+            <p id="dashUserMeta">Member</p>
+        </div>
 
         <nav class="dash-nav">
             <a href="/Customer/Dashboard" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Dashboard", StringComparison.OrdinalIgnoreCase) || string.Equals((string)ViewContext.RouteData.Values["Action"], "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
@@ -53,17 +57,8 @@
             </a>
         </nav>
 
-        <div class="dash-sidebar-footer" style="padding: 1.5rem; border-top: 1px solid var(--dash-border); margin-top: auto;">
-            <div class="dash-user-footer" style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
-                <div style="width: 32px; height: 32px; border-radius: 50%; background-color: var(--dash-primary-light); color: var(--dash-primary); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">
-                    @initials
-                </div>
-                <div style="overflow: hidden;">
-                    <h4 style="margin: 0; font-size: 0.875rem; font-weight: 600; color: var(--dash-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@fullName</h4>
-                    <p style="margin: 0; font-size: 0.75rem; color: var(--dash-muted);">@userRole</p>
-                </div>
-            </div>
-            <button class="dash-btn-primary">
+        <div class="dash-sidebar-footer">
+            <button class="dash-btn-primary" id="dashLogoutBtn" type="button">
                 <i data-lucide="log-out"></i>
                 Log Out
             </button>
@@ -92,9 +87,7 @@
                     <i data-lucide="message-square"></i>
                 </button>
                 
-                <a href="/Customer/Profile">
-                    <img src="https://ui-avatars.com/api/?name=@(fullName.Replace(" ", "+"))&background=f97316&color=fff&rounded=true" alt="User Avatar" style="width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: block;" />
-                </a>
+                <img id="dashAvatar" src="https://ui-avatars.com/api/?name=User&background=f97316&color=fff&rounded=true" alt="User Avatar" style="width: 36px; height: 36px; border-radius: 50%; cursor: pointer;" />
             </div>
         </header>
 
@@ -107,6 +100,32 @@
     <!-- Initialize Lucide Icons -->
     <script>
         lucide.createIcons();
+    </script>
+    <script src="~/js/site.js"></script>
+    <script>
+        // Dashboard logout (JWT stored in localStorage)
+        document.addEventListener("DOMContentLoaded", () => {
+            const btn = document.getElementById("dashLogoutBtn");
+            if (!btn || !window.VM) return;
+            btn.addEventListener("click", () => {
+                window.VM.clearAuth();
+                window.location.href = "/login";
+            });
+
+            const nameEl = document.getElementById("dashUserName");
+            const metaEl = document.getElementById("dashUserMeta");
+            const avatarEl = document.getElementById("dashAvatar");
+
+            const displayName = (window.VM.getUserDisplayName?.() || "").trim();
+            const role = (window.VM.getUserRole?.() || "").trim();
+
+            if (nameEl) nameEl.textContent = displayName || "User";
+            if (metaEl) metaEl.textContent = role ? role : "Member";
+            if (avatarEl) {
+                const n = encodeURIComponent(displayName || "User");
+                avatarEl.src = `https://ui-avatars.com/api/?name=${n}&background=f97316&color=fff&rounded=true`;
+            }
+        });
     </script>
     @RenderSection("Scripts", required: false)
 </body>
