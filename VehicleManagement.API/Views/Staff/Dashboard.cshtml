@@ -1,0 +1,227 @@
+@{
+    ViewData["Title"] = "Staff Dashboard";
+    Layout = "_StaffDashboardLayout";
+}
+
+<div class="staff-header-actions">
+    <p class="sys-healthy">System healthy. Welcome back to Precision Logistics.</p>
+    <div class="header-btns">
+        <a href="/staff/register" class="btn-outline-dark">
+            <i data-lucide="user-plus" style="width:16px;"></i>
+            Register New Customer
+        </a>
+        <button class="btn-orange">
+            <i data-lucide="shopping-cart" style="width:16px;"></i>
+            New Sale
+        </button>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid-4">
+    <!-- Sales Today -->
+    <div class="dash-card stat-card">
+        <div class="stat-hd">
+            <span>SALES TODAY</span>
+            <div class="icon-up"><i data-lucide="trending-up"></i></div>
+        </div>
+        <h2 class="stat-val">$42,850.00</h2>
+        <p class="stat-sub"><span class="txt-green">↑ 12.5%</span> vs yesterday</p>
+    </div>
+
+    <!-- Customers Served -->
+    <div class="dash-card stat-card">
+        <div class="stat-hd">
+            <span>CUSTOMERS SERVED</span>
+            <div class="icon-blue"><i data-lucide="users"></i></div>
+        </div>
+        <h2 class="stat-val">124</h2>
+        <p class="stat-sub"><span class="txt-blue">18</span> waiting in queue</p>
+    </div>
+
+    <!-- Pending Invoices -->
+    <div class="dash-card stat-card">
+        <div class="stat-hd">
+            <span>PENDING INVOICES</span>
+            <div class="icon-orange"><i data-lucide="clipboard-list"></i></div>
+        </div>
+        <h2 class="stat-val">32</h2>
+        <p class="stat-sub txt-orange" style="font-weight:600;">Requires attention</p>
+    </div>
+
+    <!-- Loyalty Points Issued -->
+    <div class="dash-card stat-card">
+        <div class="stat-hd">
+            <span>LOYALTY POINTS ISSUED</span>
+            <div class="icon-purple"><i data-lucide="star"></i></div>
+        </div>
+        <h2 class="stat-val">8,420</h2>
+        <p class="stat-sub">Avg. 68 pts per customer</p>
+    </div>
+</div>
+
+<div class="staff-main-grid">
+    <div class="staff-left-col">
+        <!-- Active Sales & Work Orders -->
+        <div class="dash-card full-height-card">
+            <div class="card-hd-flex">
+                <h3>Active Sales & Work Orders</h3>
+                <a href="#" class="view-all-link">VIEW ALL ACTIVE</a>
+            </div>
+            <table class="staff-table">
+                <thead>
+                    <tr>
+                        <th>ORDER ID</th>
+                        <th>CUSTOMER & VEHICLE</th>
+                        <th>STATUS</th>
+                        <th>AMOUNT</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="txt-muted">#SAL-<br/>29401</td>
+                        <td>
+                            <strong>Marcus Sterling</strong><br/>
+                            <span class="txt-muted" style="font-size:12px;">BMW M3 (G80) • ABC-1234</span>
+                        </td>
+                        <td><span class="badge-orange">PICKING</span></td>
+                        <td>$1,420.50</td>
+                        <td><i data-lucide="more-vertical" class="action-icon"></i></td>
+                    </tr>
+                    <tr>
+                        <td class="txt-muted">#SAL-<br/>29398</td>
+                        <td>
+                            <strong>Sarah Jenkins</strong><br/>
+                            <span class="txt-muted" style="font-size:12px;">Toyota Hilux • KCD-782J</span>
+                        </td>
+                        <td><span class="badge-blue">INVOICED</span></td>
+                        <td>$385.00</td>
+                        <td><i data-lucide="more-vertical" class="action-icon"></i></td>
+                    </tr>
+                    <tr>
+                        <td class="txt-muted">#SAL-<br/>29395</td>
+                        <td>
+                            <strong>Tech-Line Garage</strong><br/>
+                            <span class="txt-muted" style="font-size:12px;">Fleet Order (4 Units)</span>
+                        </td>
+                        <td><span class="badge-green">PAID</span></td>
+                        <td>$12,890.00</td>
+                        <td><i data-lucide="more-vertical" class="action-icon"></i></td>
+                    </tr>
+                    <tr>
+                        <td class="txt-muted">#SAL-<br/>29390</td>
+                        <td>
+                            <strong>Derrick Vane</strong><br/>
+                            <span class="txt-muted" style="font-size:12px;">Ford Raptor F-150 • TRX-001</span>
+                        </td>
+                        <td><span class="badge-orange">PICKING</span></td>
+                        <td>$4,120.00</td>
+                        <td><i data-lucide="more-vertical" class="action-icon"></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recent System Activity -->
+        <div class="dash-card">
+            <div class="card-hd-flex">
+                <h3>Recent System Activity</h3>
+                <span class="badge-gray">REAL-TIME</span>
+            </div>
+            <div class="activity-feed">
+                <div class="activity-item">
+                    <div class="act-icon bg-blue-light"><i data-lucide="user-plus" class="txt-blue"></i></div>
+                    <div class="act-content">
+                        <p>New customer Elena Gilbert registered by Alex R.</p>
+                        <span>2 MINUTES AGO</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="act-icon bg-green-light"><i data-lucide="file-text" class="txt-green"></i></div>
+                    <div class="act-content">
+                        <p>Invoice #INV-9921 generated for Sarah Jenkins.</p>
+                        <span>15 MINUTES AGO</span>
+                    </div>
+                </div>
+                <div class="activity-item border-none">
+                    <div class="act-icon bg-orange-light"><i data-lucide="alert-circle" class="txt-orange"></i></div>
+                    <div class="act-content">
+                        <p>Inventory alert: Brake Pads (a EM-492) low stock (4 left).</p>
+                        <span>45 MINUTES AGO</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="staff-right-col">
+        <!-- Top Spenders -->
+        <div class="dash-card">
+            <div class="card-hd-title">
+                <i data-lucide="trophy" class="txt-orange" style="width:18px;"></i>
+                <h3>Top Spenders (30 Days)</h3>
+            </div>
+            <div class="list-item">
+                <div class="avatar-square bg-blue-light txt-blue">TG</div>
+                <div class="list-details">
+                    <strong>Tech-Line Garage</strong>
+                    <span>B2B ACCOUNT</span>
+                </div>
+                <div class="list-amount">$24,900</div>
+            </div>
+            <div class="list-item border-none">
+                <div class="avatar-square bg-gray-light txt-muted">RA</div>
+                <div class="list-details">
+                    <strong>Roadster Alliance</strong>
+                    <span>RACING TEAM</span>
+                </div>
+                <div class="list-amount">$18,420</div>
+            </div>
+        </div>
+
+        <!-- Due for Maintenance -->
+        <div class="dash-card">
+            <div class="card-hd-title">
+                <i data-lucide="calendar" class="txt-blue" style="width:18px;"></i>
+                <h3>Due for Maintenance</h3>
+            </div>
+            <div class="list-item">
+                <div class="list-details">
+                    <strong>Alan Wake</strong>
+                    <span>Audi Q7 • Scheduled @@ 12k km</span>
+                </div>
+                <button class="btn-sm-blue">REMIND</button>
+            </div>
+            <div class="list-item border-none">
+                <div class="list-details">
+                    <strong>Carla Ortiz</strong>
+                    <span>Mercedes G-Wagon • Brake Check</span>
+                </div>
+                <button class="btn-sm-blue">REMIND</button>
+            </div>
+        </div>
+
+        <!-- Overdue Credits -->
+        <div class="dash-card border-orange bg-orange-ultralight">
+            <div class="card-hd-flex" style="padding-bottom:12px;">
+                <div class="card-hd-title" style="margin:0;">
+                    <i data-lucide="alert-triangle" class="txt-orange" style="width:18px;"></i>
+                    <h3 class="txt-orange">Overdue Credits</h3>
+                </div>
+                <span class="txt-orange" style="font-size:10px;font-weight:700;">ACTION REQUIRED</span>
+            </div>
+            
+            <div class="overdue-item">
+                <div class="overdue-bar"></div>
+                <div class="overdue-details">
+                    <strong>Summit Logistics</strong>
+                    <h2 class="txt-orange">$4,850.00</h2>
+                    <span class="txt-orange">12 DAYS PAST DUE</span>
+                </div>
+            </div>
+            
+            <button class="btn-outline-orange">Generate Payment Link</button>
+        </div>
+    </div>
+</div>

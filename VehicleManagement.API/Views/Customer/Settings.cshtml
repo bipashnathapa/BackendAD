@@ -1,0 +1,131 @@
+@{
+    ViewData["Title"] = "Settings";
+    Layout = "_DashboardLayout";
+}
+
+<div class="dash-page-header">
+    <h1>Settings</h1>
+    <p>Manage your account and vehicles.</p>
+</div>
+
+<div class="dash-card">
+    <div class="dash-card-hd" style="padding: 18px 18px 10px; border-bottom: 1px solid var(--dash-border);">
+        <h2 style="margin:0; font-size:16px;">Add Vehicle</h2>
+        <p style="margin:8px 0 0; color:var(--dash-muted); font-size:13px;">Add a vehicle to your account.</p>
+    </div>
+    <div class="dash-card-bd" style="padding: 16px 18px 18px;">
+        <form id="addVehicleForm" class="form" style="display:grid; grid-template-columns:1fr 1fr; gap:16px 32px;">
+            <div class="field" style="display:flex; flex-direction:column; gap:8px;">
+                <label for="vehicleNo" style="font-size:12px; color:var(--dash-muted);">Vehicle No</label>
+                <div class="control" style="position:relative;">
+                    <input type="text" id="vehicleNo" required placeholder="BA 12 PA 3456" style="width:100%; padding:12px; border:1px solid var(--dash-border); border-radius:8px;" />
+                </div>
+            </div>
+            <div class="field" style="display:flex; flex-direction:column; gap:8px;">
+                <label for="type" style="font-size:12px; color:var(--dash-muted);">Type</label>
+                <div class="control" style="position:relative;">
+                    <input type="text" id="type" placeholder="Bike / Car / SUV" style="width:100%; padding:12px; border:1px solid var(--dash-border); border-radius:8px;" />
+                </div>
+            </div>
+            <div class="field" style="display:flex; flex-direction:column; gap:8px;">
+                <label for="brand" style="font-size:12px; color:var(--dash-muted);">Brand</label>
+                <div class="control" style="position:relative;">
+                    <input type="text" id="brand" required placeholder="Toyota" style="width:100%; padding:12px; border:1px solid var(--dash-border); border-radius:8px;" />
+                </div>
+            </div>
+            <div class="field" style="display:flex; flex-direction:column; gap:8px;">
+                <label for="model" style="font-size:12px; color:var(--dash-muted);">Model</label>
+                <div class="control" style="position:relative;">
+                    <input type="text" id="model" placeholder="Corolla" style="width:100%; padding:12px; border:1px solid var(--dash-border); border-radius:8px;" />
+                </div>
+            </div>
+            <div class="actions" style="grid-column: 1 / -1; margin-top:14px;">
+                <button type="submit" class="dash-btn-primary" style="width:auto; padding:10px 24px;">Add Vehicle</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div style="height:18px"></div>
+
+<div class="dash-card">
+    <div class="dash-card-hd" style="padding: 18px 18px 10px; border-bottom: 1px solid var(--dash-border);">
+        <h2 style="margin:0; font-size:16px;">Vehicles</h2>
+        <p style="margin:8px 0 0; color:var(--dash-muted); font-size:13px;">Your registered vehicles.</p>
+    </div>
+    <div class="dash-card-bd" style="padding: 16px 18px 18px;">
+        <table class="history-table" id="vehicleTable">
+            <thead>
+                <tr>
+                    <th>Vehicle No</th>
+                    <th>Brand</th>
+                    <th>Model</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody id="vehicleList"></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const token = localStorage.getItem(window.VM?.storageKeys?.token || "vm_token") || "";
+        const role = (window.VM?.getUserRole?.() || "").toLowerCase();
+        if (!token) window.location.href = "/login";
+        if (role === "staff") window.location.href = "/staff";
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadVehicles();
+
+            const addForm = document.getElementById("addVehicleForm");
+            addForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const payload = {
+                    vehicleNo: document.getElementById("vehicleNo").value.trim(),
+                    brand: document.getElementById("brand").value.trim(),
+                    model: (document.getElementById("model").value.trim() || null),
+                    type: (document.getElementById("type").value.trim() || null),
+                };
+
+                try {
+                    await window.VM.apiJson("/api/customer/vehicles", {
+                        method: "POST",
+                        body: JSON.stringify(payload),
+                    });
+                    if(window.VM.showToast) window.VM.showToast("ok", "Vehicle added");
+                    else alert("Vehicle added");
+                    
+                    addForm.reset();
+                    await loadVehicles();
+                } catch (err) {
+                    if(window.VM.showToast) window.VM.showToast("bad", err.message || "Failed to add vehicle");
+                    else alert(err.message || "Failed to add vehicle");
+                }
+            });
+        });
+
+        async function loadVehicles() {
+            const list = document.getElementById("vehicleList");
+            try {
+                const vehicles = await window.VM.apiJson("/api/customer/vehicles");
+                if (!vehicles || vehicles.length === 0) {
+                    list.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--dash-muted);">No vehicles found.</td></tr>';
+                    return;
+                }
+
+                list.innerHTML = vehicles.map(v => `
+                    <tr>
+                        <td style="font-weight:500; color:var(--dash-text);">${v.vehicleNo ?? ""}</td>
+                        <td>${v.brand ?? ""}</td>
+                        <td>${v.model ?? ""}</td>
+                        <td><span class="status-badge" style="background-color:var(--dash-bg); color:var(--dash-muted);">${v.type ?? "N/A"}</span></td>
+                    </tr>
+                `).join("");
+            } catch (err) {
+                list.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--dash-muted);">Could not load vehicles.</td></tr>';
+            }
+        }
+    </script>
+}
