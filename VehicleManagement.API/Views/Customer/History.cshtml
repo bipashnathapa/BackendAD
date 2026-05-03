@@ -1,0 +1,92 @@
+@{
+    ViewData["Title"] = "History";
+    Layout = "_DashboardLayout";
+}
+
+<div class="dash-page-header">
+    <h1>History</h1>
+    <p>View your purchase and service records in one place.</p>
+</div>
+
+<div id="toast" class="dash-toast" role="status" aria-live="polite"></div>
+
+<div class="dash-card">
+    <div class="dash-card-header">
+        <h3>Purchase &amp; Service History</h3>
+        <p>Your recent part requests, service appointments, and service reviews.</p>
+    </div>
+    <div class="dash-card-body">
+        <div class="dash-table-wrap">
+            <table class="dash-table">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Details</th>
+                    <th>Vehicle</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody id="historyTbody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const token = localStorage.getItem(window.VM?.storageKeys?.token || "vm_token") || "";
+        const role = (window.VM?.getUserRole?.() || "").toLowerCase();
+        if (!token) window.location.href = "/login";
+        if (role === "staff") window.location.href = "/staff";
+
+        const historyTbody = document.getElementById("historyTbody");
+
+        function escapeHtml(str) {
+            return String(str ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll("\"", "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function formatDate(value) {
+            try {
+                return new Date(value).toLocaleString();
+            } catch {
+                return value || "";
+            }
+        }
+
+        function renderHistory(items) {
+            if (!items || items.length === 0) {
+                historyTbody.innerHTML = `<tr><td colspan="5" class="dash-empty">No history found.</td></tr>`;
+                return;
+            }
+
+            historyTbody.innerHTML = items.map(item => `
+                <tr>
+                    <td>${escapeHtml(formatDate(item.date))}</td>
+                    <td><span class="dash-badge">${escapeHtml(item.historyType)}</span></td>
+                    <td>
+                        <div class="dash-strong">${escapeHtml(item.title)}</div>
+                        <div class="dash-sub">${escapeHtml(item.description)}</div>
+                    </td>
+                    <td>${escapeHtml(item.vehicleNo || "-")}</td>
+                    <td><span class="dash-badge">${escapeHtml(item.status)}</span></td>
+                </tr>
+            `).join("");
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const history = await window.VM.apiJson("/api/customer/services/history");
+                renderHistory(history);
+            } catch (err) {
+                historyTbody.innerHTML = `<tr><td colspan="5" class="dash-empty">Could not load history.</td></tr>`;
+                window.VM.showToast("bad", err.message || "Failed to load history");
+            }
+        });
+    </script>
+}

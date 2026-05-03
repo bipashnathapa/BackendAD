@@ -169,4 +169,49 @@ public class CustomerServiceService : ICustomerServiceService
             ReviewedAt = r.ReviewedAt
         }).ToList();
     }
+
+    public async Task<IReadOnlyList<CustomerHistoryDTO>> GetMyHistoryAsync(string userId)
+    {
+        var appointments = await GetMyAppointmentsAsync(userId);
+        var partRequests = await GetMyPartRequestsAsync(userId);
+        var reviews = await GetMyServiceReviewsAsync(userId);
+
+        var history = new List<CustomerHistoryDTO>();
+
+        history.AddRange(appointments.Select(a => new CustomerHistoryDTO
+        {
+            ReferenceId = a.AppointmentId,
+            HistoryType = "Service",
+            Title = a.ServiceType,
+            Description = string.IsNullOrWhiteSpace(a.Notes) ? "Service appointment" : a.Notes,
+            VehicleNo = a.VehicleNo,
+            Status = a.Status,
+            Date = a.AppointmentDate
+        }));
+
+        history.AddRange(partRequests.Select(p => new CustomerHistoryDTO
+        {
+            ReferenceId = p.PartRequestId,
+            HistoryType = "Purchase",
+            Title = p.PartName,
+            Description = $"Quantity: {p.Quantity}",
+            VehicleNo = p.VehicleNo,
+            Status = p.Status,
+            Date = p.RequestedAt
+        }));
+
+        history.AddRange(reviews.Select(r => new CustomerHistoryDTO
+        {
+            ReferenceId = r.ServiceReviewId,
+            HistoryType = "Review",
+            Title = $"Service review ({r.Rating}/5)",
+            Description = r.Comment,
+            Status = "Submitted",
+            Date = r.ReviewedAt
+        }));
+
+        return history
+            .OrderByDescending(h => h.Date)
+            .ToList();
+    }
 }

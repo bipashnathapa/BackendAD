@@ -10,4 +10,5 @@ public interface ICustomerServiceService
     Task<IReadOnlyList<PartRequestDTO>> GetMyPartRequestsAsync(string userId);
     Task<ServiceReviewDTO?> AddServiceReviewAsync(string userId, CreateServiceReviewDTO dto);
     Task<IReadOnlyList<ServiceReviewDTO>> GetMyServiceReviewsAsync(string userId);
+    Task<IReadOnlyList<CustomerHistoryDTO>> GetMyHistoryAsync(string userId);
 }
