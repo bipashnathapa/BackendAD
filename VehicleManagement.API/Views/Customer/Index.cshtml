@@ -10,6 +10,7 @@
     <div class="card-bd">
         <div class="actions">
             <a class="btn primary" href="#add-vehicle">Add vehicle</a>
+            <a class="btn" href="#loyalty-discount">Check loyalty discount</a>
         </div>
         <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </div>
@@ -44,6 +45,38 @@
                 <button type="submit" class="btn primary">Add Vehicle</button>
             </div>
         </form>
+    </div>
+</div>
+
+<div class="card" id="loyalty-discount" style="margin-bottom: 18px;">
+    <div class="card-hd">
+        <h2>Loyalty Discount</h2>
+        <p>Calculate the discount for a single purchase.</p>
+    </div>
+    <div class="card-bd">
+        <form id="loyaltyForm" class="form one">
+            <div class="field">
+                <label for="purchaseAmount">Purchase Amount</label>
+                <div class="control"><input type="number" id="purchaseAmount" min="0.01" step="0.01" required placeholder="5000" style="padding-left:12px" /></div>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn primary">Calculate Discount</button>
+            </div>
+        </form>
+
+        <div style="height:12px"></div>
+
+        <table class="table" id="loyaltyResultTable" style="display:none">
+            <thead>
+                <tr>
+                    <th>Purchase</th>
+                    <th>Discount</th>
+                    <th>Final Amount</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="loyaltyResult"></tbody>
+        </table>
     </div>
 </div>
 
@@ -102,6 +135,28 @@
                     window.VM.showToast("bad", err.message || "Failed to add vehicle");
                 }
             });
+
+            const loyaltyForm = document.getElementById("loyaltyForm");
+            loyaltyForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const purchaseAmount = Number(document.getElementById("purchaseAmount").value);
+                if (!purchaseAmount || purchaseAmount <= 0) {
+                    window.VM.showToast("bad", "Enter a valid purchase amount");
+                    return;
+                }
+
+                try {
+                    const result = await window.VM.apiJson("/api/customer/loyalty/calculate", {
+                        method: "POST",
+                        body: JSON.stringify({ purchaseAmount }),
+                    });
+                    renderLoyaltyResult(result);
+                    window.VM.showToast("ok", result.message || "Discount calculated");
+                } catch (err) {
+                    window.VM.showToast("bad", err.message || "Failed to calculate discount");
+                }
+            });
         });
 
         async function loadVehicles() {
@@ -124,6 +179,28 @@
             } catch (err) {
                 list.innerHTML = '<tr><td colspan="4" class="table-empty">Could not load vehicles.</td></tr>';
             }
+        }
+
+        function renderLoyaltyResult(result) {
+            const table = document.getElementById("loyaltyResultTable");
+            const list = document.getElementById("loyaltyResult");
+            table.style.display = "";
+
+            list.innerHTML = `
+                <tr>
+                    <td>${formatMoney(result.purchaseAmount)}</td>
+                    <td>${formatMoney(result.discountAmount)} (${result.discountPercentage}%)</td>
+                    <td>${formatMoney(result.finalAmount)}</td>
+                    <td>${result.discountApplied ? "Applied" : "Not applied"}</td>
+                </tr>
+            `;
+        }
+
+        function formatMoney(value) {
+            return Number(value || 0).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
         }
     </script>
 }
