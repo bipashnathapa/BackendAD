@@ -1,3 +1,22 @@
+@using Microsoft.AspNetCore.Identity
+@using Vehicle.Domain.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+    
+    // For demonstration: Prefer a 'Staff' role for the Staff Dashboard context
+    if (currentUser == null)
+    {
+        currentUser = UserManager.Users.FirstOrDefault(u => u.UserRole == "Staff") 
+                      ?? UserManager.Users.FirstOrDefault();
+    }
+    
+    var fullName = currentUser?.FullName ?? "Alex Rodriguez (Demo)";
+    var userRole = currentUser?.UserRole ?? "Floor Supervisor";
+}
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -79,10 +98,10 @@
                 
                 <div class="user-profile">
                     <div class="user-text">
-                        <span class="user-name">Alex Rodriguez</span>
-                        <span class="user-role">FLOOR SUPERVISOR</span>
+                        <span class="user-name">@fullName</span>
+                        <span class="user-role">@(userRole.ToUpper())</span>
                     </div>
-                    <img src="https://ui-avatars.com/api/?name=Alex+Rodriguez&background=0D8ABC&color=fff&rounded=true" alt="User Avatar" />
+                    <img src="https://ui-avatars.com/api/?name=@(fullName.Replace(" ", "+"))&background=0D8ABC&color=fff&rounded=true" alt="User Avatar" />
                 </div>
             </div>
         </header>
