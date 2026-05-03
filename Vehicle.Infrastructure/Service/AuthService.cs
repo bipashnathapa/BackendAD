@@ -36,16 +36,25 @@ public class AuthService : IAuthService
         // 2. If Identity creation succeeded, link to Customer/Staff tables
         if (result.Succeeded)
         {
-            if (model.UserRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                _context.Customers.Add(new Customer { UserID = user.Id });
-            }
-            else if (model.UserRole.Equals("Staff", StringComparison.OrdinalIgnoreCase))
-            {
-                _context.Staffs.Add(new Staff { UserID = user.Id });
-            }
+                if (model.UserRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
+                {
+                    _context.Customers.Add(new Customer { UserID = user.Id, User = user });
+                }
+                else if (model.UserRole.Equals("Staff", StringComparison.OrdinalIgnoreCase))
+                {
+                    _context.Staffs.Add(new Staff { UserID = user.Id, User = user });
+                }
 
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // If adding customer/staff fails, delete the user and return error
+                await _userManager.DeleteAsync(user);
+                return IdentityResult.Failed(new IdentityError { Description = $"Failed to create user role record: {ex.Message}" });
+            }
         }
 
         return result;
