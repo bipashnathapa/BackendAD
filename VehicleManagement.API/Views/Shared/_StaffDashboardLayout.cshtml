@@ -1,0 +1,105 @@
+@{
+    var currentAction = Convert.ToString(ViewContext.RouteData.Values["Action"]);
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] • Warehouse Admin</title>
+    <link rel="stylesheet" href="~/css/dashboard.css" />
+    <link rel="stylesheet" href="~/css/staff-dashboard.css" />
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="dashboard-layout staff-dashboard">
+    <!-- Sidebar -->
+    <aside class="dash-sidebar dark-sidebar">
+        <div class="dash-brand">
+            <div class="brand-icon-box">
+                <i data-lucide="wrench"></i>
+            </div>
+            <div class="brand-text">
+                <span class="brand-title">AutoParts Pro</span>
+                <span class="brand-subtitle">WAREHOUSE ADMIN</span>
+            </div>
+        </div>
+        
+        <div class="sidebar-action">
+            <button class="btn-orange-full">
+                <i data-lucide="plus" style="width:16px;height:16px"></i>
+                New Sale
+            </button>
+        </div>
+
+        <nav class="dash-nav dark-nav">
+            <a href="/staff/dashboard" class="dash-nav-item @(string.Equals(currentAction, "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                <i data-lucide="package"></i>
+                Sales
+            </a>
+            <a href="/staff" class="dash-nav-item @(string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                <i data-lucide="users"></i>
+                Customers
+            </a>
+            <a href="#" class="dash-nav-item">
+                <i data-lucide="layers"></i>
+                Inventory
+            </a>
+            <a href="#" class="dash-nav-item">
+                <i data-lucide="bar-chart-2"></i>
+                Reports
+            </a>
+        </nav>
+
+        <div class="dash-sidebar-footer dark-footer">
+            <a href="#" class="dash-nav-item">
+                <i data-lucide="settings"></i>
+                Settings
+            </a>
+            <a href="/login" class="dash-nav-item">
+                <i data-lucide="log-out"></i>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="dash-main">
+        <!-- Header -->
+        <header class="dash-header light-header">
+            <div class="dash-search expand-search">
+                <i data-lucide="search" style="color:var(--dash-muted);width:16px;"></i>
+                <input type="text" placeholder="Find customers by vehicle #, phone, ID, or name..." />
+            </div>
+            
+            <div class="dash-header-actions">
+                <button class="dash-icon-btn" aria-label="Notifications">
+                    <i data-lucide="bell"></i>
+                </button>
+                <button class="dash-icon-btn" aria-label="Help">
+                    <i data-lucide="help-circle"></i>
+                </button>
+                
+                <div class="user-profile">
+                    <div class="user-text">
+                        <span class="user-name">Alex Rodriguez</span>
+                        <span class="user-role">FLOOR SUPERVISOR</span>
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name=Alex+Rodriguez&background=0D8ABC&color=fff&rounded=true" alt="User Avatar" />
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Content -->
+        <main class="dash-content bg-gray">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,503 @@
+@{
+    ViewData["Title"] = "Customer Dashboard";
+    Layout = "_DashboardLayout";
+}
+
+<div class="dash-page-header">
+    <h1>Dashboard</h1>
+    <p>Manage your vehicles, appointments, requests, and reviews.</p>
+</div>
+
+<div id="toast" class="dash-toast" role="status" aria-live="polite"></div>
+
+<div class="dash-grid">
+    <div class="dash-main-col">
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <h3>My Vehicles</h3>
+                <p>Your registered vehicles.</p>
+            </div>
+            <div class="dash-card-body">
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                        <tr>
+                            <th>Vehicle No</th>
+                            <th>Brand</th>
+                            <th>Model</th>
+                            <th>Type</th>
+                        </tr>
+                        </thead>
+                        <tbody id="vehiclesTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div style="height:18px"></div>
+
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <h3>Appointments</h3>
+                <p>Book an appointment and view upcoming appointments.</p>
+            </div>
+            <div class="dash-card-body">
+                <form id="bookAppointmentForm" class="dash-form">
+                    <div class="dash-form-row">
+                        <div class="dash-field">
+                            <label for="apptVehicleId">Vehicle</label>
+                            <select id="apptVehicleId" required></select>
+                        </div>
+                        <div class="dash-field">
+                            <label for="apptDate">Date &amp; time</label>
+                            <input id="apptDate" type="datetime-local" required />
+                        </div>
+                    </div>
+                    <div class="dash-form-row">
+                        <div class="dash-field">
+                            <label for="apptServiceType">Service type</label>
+                            <input id="apptServiceType" type="text" maxlength="100" placeholder="e.g., Annual Maintenance" required />
+                        </div>
+                    </div>
+                    <div class="dash-form-row">
+                        <div class="dash-field">
+                            <label for="apptNotes">Notes (optional)</label>
+                            <textarea id="apptNotes" maxlength="500" placeholder="Add notes…"></textarea>
+                        </div>
+                    </div>
+                    <div class="dash-actions">
+                        <button class="dash-btn-primary" type="submit">Book Appointment</button>
+                    </div>
+                </form>
+
+                <div style="height:14px"></div>
+
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Vehicle</th>
+                            <th>Service</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody id="appointmentsTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-side-col">
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <h3>Loyalty Discount</h3>
+                <p>Get 10% off when a single purchase is more than 5000.</p>
+            </div>
+            <div class="dash-card-body">
+                <form id="loyaltyForm" class="dash-form">
+                    <div class="dash-field">
+                        <label for="purchaseAmount">Purchase amount</label>
+                        <input id="purchaseAmount" type="number" min="0.01" step="0.01" required placeholder="e.g., 6500" />
+                    </div>
+                    <div class="dash-actions">
+                        <button class="dash-btn-primary" type="submit">Calculate Discount</button>
+                    </div>
+                </form>
+
+                <div style="height:14px"></div>
+
+                <div class="dash-table-wrap">
+                    <table class="dash-table" id="loyaltyResultTable" style="display:none">
+                        <thead>
+                        <tr>
+                            <th>Discount</th>
+                            <th>Final</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody id="loyaltyResultTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div style="height:18px"></div>
+
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <h3>Unavailable Part Request</h3>
+                <p>Request a part that isn’t listed.</p>
+            </div>
+            <div class="dash-card-body">
+                <form id="partRequestForm" class="dash-form">
+                    <div class="dash-field">
+                        <label for="partVehicleId">Vehicle (optional)</label>
+                        <select id="partVehicleId"></select>
+                    </div>
+                    <div class="dash-field">
+                        <label for="partName">Part name</label>
+                        <input id="partName" type="text" maxlength="120" required placeholder="e.g., Brake pad set" />
+                    </div>
+                    <div class="dash-field">
+                        <label for="vehicleModel">Vehicle model (optional)</label>
+                        <input id="vehicleModel" type="text" maxlength="80" placeholder="e.g., Corolla 2018" />
+                    </div>
+                    <div class="dash-form-row">
+                        <div class="dash-field">
+                            <label for="quantity">Quantity</label>
+                            <input id="quantity" type="number" min="1" max="100" value="1" required />
+                        </div>
+                    </div>
+                    <div class="dash-field">
+                        <label for="partNotes">Notes (optional)</label>
+                        <textarea id="partNotes" maxlength="500" placeholder="Add notes…"></textarea>
+                    </div>
+                    <div class="dash-actions">
+                        <button class="dash-btn-primary" type="submit">Submit Request</button>
+                    </div>
+                </form>
+
+                <div style="height:14px"></div>
+
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                        <tr>
+                            <th>Part</th>
+                            <th>Qty</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody id="partsTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div style="height:18px"></div>
+
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <h3>Service Reviews</h3>
+                <p>Leave a review after a service.</p>
+            </div>
+            <div class="dash-card-body">
+                <form id="reviewForm" class="dash-form">
+                    <div class="dash-field">
+                        <label for="reviewAppointmentId">Appointment (optional)</label>
+                        <select id="reviewAppointmentId"></select>
+                    </div>
+                    <div class="dash-form-row">
+                        <div class="dash-field">
+                            <label for="rating">Rating</label>
+                            <select id="rating" required>
+                                <option value="5">5</option>
+                                <option value="4">4</option>
+                                <option value="3">3</option>
+                                <option value="2">2</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="dash-field">
+                        <label for="comment">Comment</label>
+                        <textarea id="comment" maxlength="800" required placeholder="Write your feedback…"></textarea>
+                    </div>
+                    <div class="dash-actions">
+                        <button class="dash-btn-primary" type="submit">Submit Review</button>
+                    </div>
+                </form>
+
+                <div style="height:14px"></div>
+
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                        <tr>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                        </tr>
+                        </thead>
+                        <tbody id="reviewsTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Guard
+        const token = localStorage.getItem(window.VM?.storageKeys?.token || "vm_token") || "";
+        const role = (window.VM?.getUserRole?.() || "").toLowerCase();
+        if (!token) window.location.href = "/login";
+        if (role === "staff") window.location.href = "/staff";
+
+        const el = (id) => document.getElementById(id);
+
+        function escapeHtml(str) {
+            return String(str ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll("\"", "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function fmtDate(iso) {
+            try {
+                const d = new Date(iso);
+                return d.toLocaleString();
+            } catch {
+                return iso;
+            }
+        }
+
+        function formatMoney(value) {
+            return Number(value || 0).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+        }
+
+        function populateVehicleSelects(vehicles) {
+            const apptSel = el("apptVehicleId");
+            const partSel = el("partVehicleId");
+
+            apptSel.innerHTML = "";
+            partSel.innerHTML = `<option value="">No vehicle</option>`;
+
+            if (!vehicles || vehicles.length === 0) {
+                apptSel.innerHTML = `<option value="" disabled selected>No vehicles found</option>`;
+                return;
+            }
+
+            for (const v of vehicles) {
+                const label = `${v.vehicleNo} • ${v.brand}${v.model ? " " + v.model : ""}`;
+                apptSel.insertAdjacentHTML("beforeend", `<option value="${v.vehicleId}">${escapeHtml(label)}</option>`);
+                partSel.insertAdjacentHTML("beforeend", `<option value="${v.vehicleId}">${escapeHtml(label)}</option>`);
+            }
+        }
+
+        function populateAppointmentSelect(appointments) {
+            const sel = el("reviewAppointmentId");
+            sel.innerHTML = `<option value="">No appointment</option>`;
+            for (const a of (appointments || [])) {
+                const label = `${fmtDate(a.appointmentDate)} • ${a.vehicleNo} • ${a.serviceType}`;
+                sel.insertAdjacentHTML("beforeend", `<option value="${a.appointmentId}">${escapeHtml(label)}</option>`);
+            }
+        }
+
+        function renderVehicles(vehicles) {
+            const tbody = el("vehiclesTbody");
+            if (!vehicles || vehicles.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="dash-empty">No vehicles found.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = vehicles.map(v => `
+                <tr>
+                    <td>${escapeHtml(v.vehicleNo)}</td>
+                    <td>${escapeHtml(v.brand)}</td>
+                    <td>${escapeHtml(v.model)}</td>
+                    <td>${escapeHtml(v.type)}</td>
+                </tr>
+            `).join("");
+        }
+
+        function renderAppointments(items) {
+            const tbody = el("appointmentsTbody");
+            if (!items || items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="dash-empty">No appointments yet.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = items.map(a => `
+                <tr>
+                    <td>${escapeHtml(fmtDate(a.appointmentDate))}</td>
+                    <td>${escapeHtml(a.vehicleNo)}</td>
+                    <td>${escapeHtml(a.serviceType)}</td>
+                    <td><span class="dash-badge">${escapeHtml(a.status)}</span></td>
+                </tr>
+            `).join("");
+        }
+
+        function renderParts(items) {
+            const tbody = el("partsTbody");
+            if (!items || items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="dash-empty">No part requests yet.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = items.map(p => `
+                <tr>
+                    <td>
+                        <div class="dash-strong">${escapeHtml(p.partName)}</div>
+                        <div class="dash-sub">${escapeHtml(p.vehicleNo || "")}</div>
+                    </td>
+                    <td>${escapeHtml(p.quantity)}</td>
+                    <td><span class="dash-badge">${escapeHtml(p.status)}</span></td>
+                </tr>
+            `).join("");
+        }
+
+        function renderReviews(items) {
+            const tbody = el("reviewsTbody");
+            if (!items || items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" class="dash-empty">No reviews yet.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = items.map(r => `
+                <tr>
+                    <td>${"★".repeat(Math.max(0, Math.min(5, Number(r.rating) || 0)))}</td>
+                    <td>${escapeHtml(r.comment)}</td>
+                </tr>
+            `).join("");
+        }
+
+        function renderLoyaltyResult(result) {
+            el("loyaltyResultTable").style.display = "";
+            el("loyaltyResultTbody").innerHTML = `
+                <tr>
+                    <td>${formatMoney(result.discountAmount)} (${escapeHtml(result.discountPercentage)}%)</td>
+                    <td>${formatMoney(result.finalAmount)}</td>
+                    <td><span class="dash-badge">${result.discountApplied ? "Applied" : "Not applied"}</span></td>
+                </tr>
+            `;
+        }
+
+        async function loadAll() {
+            const [vehicles, appointments, parts, reviews] = await Promise.all([
+                window.VM.apiJson("/api/customer/vehicles"),
+                window.VM.apiJson("/api/customer/services/appointments"),
+                window.VM.apiJson("/api/customer/services/parts"),
+                window.VM.apiJson("/api/customer/services/reviews"),
+            ]);
+
+            renderVehicles(vehicles);
+            populateVehicleSelects(vehicles);
+
+            renderAppointments(appointments);
+            populateAppointmentSelect(appointments);
+
+            renderParts(parts);
+            renderReviews(reviews);
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                await loadAll();
+            } catch (err) {
+                window.VM.showToast("bad", err.message || "Failed to load dashboard data");
+            }
+
+            el("loyaltyForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const purchaseAmount = Number(el("purchaseAmount").value);
+
+                if (!Number.isFinite(purchaseAmount) || purchaseAmount <= 0) {
+                    window.VM.showToast("bad", "Enter a valid purchase amount");
+                    return;
+                }
+
+                try {
+                    const result = await window.VM.apiJson("/api/customer/loyalty/calculate", {
+                        method: "POST",
+                        body: JSON.stringify({ purchaseAmount }),
+                    });
+                    renderLoyaltyResult(result);
+                    window.VM.showToast("ok", result.message || "Discount calculated");
+                } catch (err) {
+                    window.VM.showToast("bad", err.message || "Unable to calculate discount");
+                }
+            });
+
+            el("bookAppointmentForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const vehicleId = Number(el("apptVehicleId").value);
+                const dtLocal = el("apptDate").value;
+                const serviceType = el("apptServiceType").value.trim();
+                const notes = el("apptNotes").value.trim();
+
+                if (!vehicleId || !dtLocal || !serviceType) return;
+
+                const appointmentDate = new Date(dtLocal).toISOString();
+
+                try {
+                    await window.VM.apiJson("/api/customer/services/appointments", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            vehicleId,
+                            appointmentDate,
+                            serviceType,
+                            notes: notes ? notes : null,
+                        }),
+                    });
+                    window.VM.showToast("ok", "Appointment booked");
+                    el("bookAppointmentForm").reset();
+                    const appointments = await window.VM.apiJson("/api/customer/services/appointments");
+                    renderAppointments(appointments);
+                    populateAppointmentSelect(appointments);
+                } catch (err) {
+                    window.VM.showToast("bad", err.message || "Unable to book appointment");
+                }
+            });
+
+            el("partRequestForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const vehicleIdRaw = el("partVehicleId").value;
+                const partName = el("partName").value.trim();
+                const vehicleModel = el("vehicleModel").value.trim();
+                const quantity = Number(el("quantity").value);
+                const notes = el("partNotes").value.trim();
+
+                if (!partName || !Number.isFinite(quantity) || quantity <= 0) return;
+
+                try {
+                    await window.VM.apiJson("/api/customer/services/parts", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            vehicleId: vehicleIdRaw ? Number(vehicleIdRaw) : null,
+                            partName,
+                            vehicleModel: vehicleModel ? vehicleModel : null,
+                            quantity,
+                            notes: notes ? notes : null,
+                        }),
+                    });
+                    window.VM.showToast("ok", "Request submitted");
+                    el("partRequestForm").reset();
+                    const parts = await window.VM.apiJson("/api/customer/services/parts");
+                    renderParts(parts);
+                } catch (err) {
+                    window.VM.showToast("bad", err.message || "Unable to request part");
+                }
+            });
+
+            el("reviewForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const appointmentIdRaw = el("reviewAppointmentId").value;
+                const rating = Number(el("rating").value);
+                const comment = el("comment").value.trim();
+                if (!comment || !Number.isFinite(rating)) return;
+
+                try {
+                    await window.VM.apiJson("/api/customer/services/reviews", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            appointmentId: appointmentIdRaw ? Number(appointmentIdRaw) : null,
+                            rating,
+                            comment,
+                        }),
+                    });
+                    window.VM.showToast("ok", "Review submitted");
+                    el("reviewForm").reset();
+                    const reviews = await window.VM.apiJson("/api/customer/services/reviews");
+                    renderReviews(reviews);
+                } catch (err) {
+                    window.VM.showToast("bad", err.message || "Unable to submit review");
+                }
+            });
+        });
+    </script>
+}
+

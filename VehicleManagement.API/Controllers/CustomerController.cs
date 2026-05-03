@@ -5,6 +5,12 @@ namespace VehicleManagement.Controllers;
 public class CustomerController : Controller
 {
     [HttpGet("/customer")]
-    public IActionResult Index() => View();
+    public IActionResult Index() => RedirectToAction("Dashboard");
+
+    [HttpGet("/customer/dashboard")]
+    public IActionResult Dashboard() => View("CustomerDashboard");
+
+    [HttpGet("/customer/settings")]
+    public IActionResult Settings() => View();
 }
 
