@@ -1,21 +1,9 @@
-@using Microsoft.AspNetCore.Identity
-@using Vehicle.Domain.Models
-@inject UserManager<ApplicationUser> UserManager
-@inject SignInManager<ApplicationUser> SignInManager
-
 @{
-    var currentUser = await UserManager.GetUserAsync(User);
-    
-    // For demonstration: Prefer a 'Staff' role for the Staff Dashboard context
-    if (currentUser == null)
-    {
-        currentUser = UserManager.Users.FirstOrDefault(u => u.UserRole == "Staff") 
-                      ?? UserManager.Users.FirstOrDefault();
-    }
-    
-    var fullName = currentUser?.FullName ?? "Alex Rodriguez (Demo)";
-    var userRole = currentUser?.UserRole ?? "Floor Supervisor";
+    var fullName = "Shiv Sah";
+    var userRole = "Staff";
 }
+
+
 
 <!doctype html>
 <html lang="en">
@@ -30,14 +18,14 @@
 </head>
 <body class="dashboard-layout staff-dashboard">
     <!-- Sidebar -->
-    <aside class="dash-sidebar dark-sidebar">
+    <aside class="dash-sidebar light-sidebar">
         <div class="dash-brand">
             <div class="brand-icon-box">
-                <i data-lucide="wrench"></i>
+                <i data-lucide="component"></i>
             </div>
             <div class="brand-text">
-                <span class="brand-title">AutoParts Pro</span>
-                <span class="brand-subtitle">WAREHOUSE ADMIN</span>
+                <span class="brand-title">Precision Logistics</span>
+                <span class="brand-subtitle">STAFF PORTAL</span>
             </div>
         </div>
         
@@ -48,12 +36,12 @@
             </button>
         </div>
 
-        <nav class="dash-nav dark-nav">
+        <nav class="dash-nav light-nav">
             <a href="/staff/dashboard" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
-                <i data-lucide="package"></i>
-                Sales
+                <i data-lucide="layout-dashboard"></i>
+                Dashboard
             </a>
-            <a href="/staff" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/staff/customers" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Customers", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="users"></i>
                 Customers
             </a>
@@ -62,12 +50,17 @@
                 Inventory
             </a>
             <a href="#" class="dash-nav-item">
+                <i data-lucide="shopping-bag"></i>
+                Sales
+            </a>
+            <a href="#" class="dash-nav-item">
                 <i data-lucide="bar-chart-2"></i>
                 Reports
             </a>
         </nav>
 
-        <div class="dash-sidebar-footer dark-footer">
+
+        <div class="dash-sidebar-footer light-footer">
             <a href="#" class="dash-nav-item">
                 <i data-lucide="settings"></i>
                 Settings

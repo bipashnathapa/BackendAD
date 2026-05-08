@@ -80,9 +80,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
     // Auto-apply EF Core migrations in development to prevent missing-table 500s.
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
+    // using var scope = app.Services.CreateScope();
+    // var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    // db.Database.Migrate();
 }
 
 app.UseHttpsRedirection();
