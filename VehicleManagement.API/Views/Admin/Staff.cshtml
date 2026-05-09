@@ -1,0 +1,97 @@
+@{ ViewData["Title"]="Staff"; Layout="_AdminDashboardLayout"; }
+
+<h1 class="dash-page-title">Staff</h1>
+
+<div class="data-card" style="margin-bottom:16px">
+    <div class="data-card-header">
+        <h3>Create staff account</h3>
+        <span class="txt-muted" style="font-size:12px">Only admins can create staff users.</span>
+    </div>
+    <div style="padding:16px">
+        <form id="staffForm" class="dash-form" style="max-width:520px">
+            <div class="dash-field">
+                <label for="fullName">Full name</label>
+                <input id="fullName" type="text" required />
+            </div>
+            <div class="dash-field">
+                <label for="email">Email</label>
+                <input id="email" type="email" required autocomplete="off" />
+            </div>
+            <div class="dash-field">
+                <label for="password">Temporary password</label>
+                <input id="password" type="password" minlength="6" required autocomplete="new-password" />
+            </div>
+            <div class="dash-actions">
+                <button class="dash-btn-primary" type="submit">Create Staff</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="data-card">
+    <div class="data-card-header">
+        <h3>Current staff</h3>
+        <button class="btn btn-ghost" type="button" id="refreshBtn">Refresh</button>
+    </div>
+    <table class="data-table" id="staffT">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr><td colspan="2" class="empty">Loading…</td></tr>
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+<script>
+(() => {
+    const esc = (s) => String(s ?? "")
+        .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;").replaceAll("'", "&#039;");
+
+    async function loadStaff() {
+        const tb = document.querySelector("#staffT tbody");
+        tb.innerHTML = `<tr><td colspan="2" class="empty">Loading…</td></tr>`;
+        try {
+            const list = await API.fetch("/api/admin/staff?take=200");
+            tb.innerHTML = (!Array.isArray(list) || list.length === 0)
+                ? `<tr><td colspan="2" class="empty">No staff yet.</td></tr>`
+                : list.map(s => `<tr><td><strong>${esc(s.fullName)}</strong></td><td class="txt-muted">${esc(s.email)}</td></tr>`).join("");
+        } catch (e) {
+            API.toast(e.message || "Failed to load staff", "error");
+            tb.innerHTML = `<tr><td colspan="2" class="empty">Couldn’t load staff.</td></tr>`;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadStaff();
+        document.getElementById("refreshBtn")?.addEventListener("click", loadStaff);
+
+        document.getElementById("staffForm")?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById("fullName").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            if (!fullName || !email || !password) return;
+
+            try {
+                const res = await API.fetch("/api/admin/staff", {
+                    method: "POST",
+                    body: JSON.stringify({ fullName, email, password })
+                });
+                API.toast(res.message || "Staff created");
+                document.getElementById("staffForm").reset();
+                await loadStaff();
+            } catch (err) {
+                API.toast(err.message || "Create failed", "error");
+            }
+        });
+    });
+})();
+</script>
+}
+

@@ -21,6 +21,10 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDTO model)
     {
+        // Self-registration is customer-only. Staff accounts must be created by an Admin.
+        if (!string.Equals(model.UserRole, "Customer", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "Only customers can self-register. Staff accounts must be created by an admin." });
+
         var result = await _authService.RegisterAsync(model);
         
         if (result.Succeeded) 

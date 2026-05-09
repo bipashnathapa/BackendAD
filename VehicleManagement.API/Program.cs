@@ -40,6 +40,7 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<ICustomerProfileService, CustomerProfileService>();
+builder.Services.AddScoped<IAdminStaffService, AdminStaffService>();
 
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
