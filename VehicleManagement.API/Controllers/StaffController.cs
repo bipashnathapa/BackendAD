@@ -16,5 +16,5 @@ public class StaffController : Controller
     [HttpGet("/staff/invoice/{id:int}")] public IActionResult Invoice(int id) { ViewData["InvoiceId"] = id; return View(); }
     [HttpGet("/staff/reports")] public IActionResult Reports() => View();
     [HttpGet("/staff/low-stock")] public IActionResult LowStock() => View();
+    [HttpGet("/staff/service-requests")] public IActionResult ServiceRequests() => View();
 }
-
