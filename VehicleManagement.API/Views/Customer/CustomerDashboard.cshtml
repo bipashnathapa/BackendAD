@@ -199,7 +199,8 @@
         const token = localStorage.getItem(window.VM?.storageKeys?.token || "vm_token") || "";
         const role = (window.VM?.getUserRole?.() || "").toLowerCase();
         if (!token) window.location.href = "/login";
-        if (role === "staff") window.location.href = "/staff";
+        if (role === "admin") window.location.href = "/admin/dashboard";
+        if (role === "staff") window.location.href = "/staff/dashboard";
 
         const el = (id) => document.getElementById(id);
 
@@ -426,4 +427,3 @@
         });
     </script>
 }
-
