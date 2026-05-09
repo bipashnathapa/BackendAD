@@ -1,0 +1,35 @@
+@{ ViewData["Title"]="Overview"; Layout="_AdminDashboardLayout"; }
+<h1 class="dash-page-title">Overview</h1>
+<div class="stat-grid">
+    <div class="stat-card"><div class="stat-label"><i data-lucide="truck" style="width:14px"></i> Active Vendors</div><div class="stat-value" id="statVendors">—</div></div>
+    <div class="stat-card"><div class="stat-label"><i data-lucide="package" style="width:14px"></i> Total Parts</div><div class="stat-value" id="statParts">—</div></div>
+    <div class="stat-card"><div class="stat-label"><i data-lucide="alert-triangle" style="width:14px"></i> Low Stock</div><div class="stat-value" id="statLow" style="color:#dc2626">—</div></div>
+    <div class="stat-card"><div class="stat-label"><i data-lucide="alert-circle" style="width:14px"></i> Pending Credits</div><div class="stat-value" id="statCredits" style="color:#d97706">—</div></div>
+</div>
+<div class="data-card">
+    <div class="data-card-header"><h3>Low stock items</h3><a href="/admin/low-stock" class="btn btn-ghost">View all</a></div>
+    <table class="data-table" id="lsT"><thead><tr><th>Part</th><th>Code</th><th>Stock</th><th>Threshold</th><th>Vendor</th></tr></thead><tbody><tr><td colspan="5" class="empty">Loading…</td></tr></tbody></table>
+</div>
+@section Scripts {
+<script>
+(async () => {
+    try {
+        const [v, p, l, c] = await Promise.all([
+            API.fetch("/api/admin/vendors"),
+            API.fetch("/api/parts"),
+            API.fetch("/api/parts/low-stock"),
+            API.fetch("/api/staff/reports/pending-credits?olderThanDays=30")
+        ]);
+        document.getElementById("statVendors").textContent = v.filter(x => x.isActive).length;
+        document.getElementById("statParts").textContent = p.length;
+        document.getElementById("statLow").textContent = l.length;
+        document.getElementById("statCredits").textContent = c.length;
+        const tb = document.querySelector("#lsT tbody");
+        tb.innerHTML = l.length === 0
+            ? `<tr><td colspan="5" class="empty">All stock healthy ✅</td></tr>`
+            : l.slice(0,10).map(x => `<tr><td>${x.partName}</td><td>${x.partCode||"—"}</td><td><span class="badge badge-red">${x.stockQuantity}</span></td><td>${x.lowStockThreshold}</td><td>${x.vendorName||"—"}</td></tr>`).join("");
+        lucide.createIcons();
+    } catch (e) { API.toast(e.message, "error"); }
+})();
+</script>
+}

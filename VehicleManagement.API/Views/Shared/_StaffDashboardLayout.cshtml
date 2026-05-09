@@ -42,26 +42,30 @@
         </div>
         
         <div class="sidebar-action">
-            <button class="btn-orange-full">
+            <a href="/staff/new-sale" class="btn-orange-full" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none">
                 <i data-lucide="plus" style="width:16px;height:16px"></i>
                 New Sale
-            </button>
+            </a>
         </div>
 
         <nav class="dash-nav dark-nav">
             <a href="/staff/dashboard" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                <i data-lucide="layout-dashboard"></i>
+                Dashboard
+            </a>
+            <a href="/staff/new-sale" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "NewSale", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="package"></i>
-                Sales
+                New Sale
             </a>
             <a href="/staff" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="users"></i>
                 Customers
             </a>
-            <a href="#" class="dash-nav-item">
+            <a href="/staff/low-stock" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "LowStock", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="layers"></i>
                 Inventory
             </a>
-            <a href="#" class="dash-nav-item">
+            <a href="/staff/reports" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Reports", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="bar-chart-2"></i>
                 Reports
             </a>
@@ -113,6 +117,7 @@
     </div>
 
     <!-- Initialize Lucide Icons -->
+    <script src="~/js/api-client.js"></script>
     <script>
         lucide.createIcons();
     </script>
