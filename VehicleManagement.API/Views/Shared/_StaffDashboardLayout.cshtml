@@ -59,16 +59,11 @@
             </a>
         </nav>
 
-
         <div class="dash-sidebar-footer light-footer">
-            <a href="#" class="dash-nav-item">
-                <i data-lucide="settings"></i>
-                Settings
-            </a>
-            <a href="/login" class="dash-nav-item">
+            <button type="button" class="dash-nav-item" id="staffLogoutBtn" style="background:none;border:none;width:100%;text-align:left;cursor:pointer">
                 <i data-lucide="log-out"></i>
                 Logout
-            </a>
+            </button>
         </div>
     </aside>
 
@@ -106,9 +101,24 @@
     </div>
 
     <!-- Initialize Lucide Icons -->
+    <script src="~/js/site.js"></script>
     <script src="~/js/api-client.js"></script>
     <script>
         lucide.createIcons();
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const btn = document.getElementById("staffLogoutBtn");
+            if (!btn) return;
+            btn.addEventListener("click", () => {
+                try { window.VM?.clearAuth?.(); } catch {}
+                try {
+                    localStorage.removeItem("vm_token");
+                    localStorage.removeItem("vm_email");
+                    localStorage.removeItem("vm_display_name");
+                } catch {}
+                window.location.href = "/login";
+            });
+        });
     </script>
     @RenderSection("Scripts", required: false)
 </body>
