@@ -1,0 +1,53 @@
+@{ ViewData["Title"]="Reports"; Layout="_StaffDashboardLayout"; }
+<link rel="stylesheet" href="~/css/admin-dashboard.css" />
+<div class="admin-dashboard">
+<h1 class="dash-page-title">Customer Reports</h1>
+<div style="display:flex;gap:8px;margin-bottom:18px">
+    <button class="btn btn-primary" onclick="show('R')">Regulars</button>
+    <button class="btn btn-ghost" onclick="show('H')">High Spenders</button>
+    <button class="btn btn-ghost" onclick="show('P')">Pending Credits</button>
+</div>
+<div id="paneR" class="data-card">
+    <div class="data-card-header"><h3>Regular customers</h3>
+        <div>Min <input id="mv" type="number" min="1" value="3" style="width:60px;padding:6px;border:1px solid #d1d5db;border-radius:6px" /> visits in <input id="dy" type="number" min="1" value="180" style="width:70px;padding:6px;border:1px solid #d1d5db;border-radius:6px" />d <button class="btn btn-ghost" onclick="lR()">Apply</button></div>
+    </div>
+    <table class="data-table" id="rT"><thead><tr><th>Name</th><th>Email</th><th>Visits</th><th>Last visit</th></tr></thead><tbody><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table>
+</div>
+<div id="paneH" class="data-card" style="display:none">
+    <div class="data-card-header"><h3>Top spenders</h3>
+        <div>Top <input id="top" type="number" min="1" value="10" style="width:60px;padding:6px;border:1px solid #d1d5db;border-radius:6px" /> <button class="btn btn-ghost" onclick="lH()">Apply</button></div>
+    </div>
+    <table class="data-table" id="hT"><thead><tr><th>Name</th><th>Email</th><th>Total</th><th>Invoices</th></tr></thead><tbody><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table>
+</div>
+<div id="paneP" class="data-card" style="display:none">
+    <div class="data-card-header"><h3>Pending credits</h3>
+        <div>Older than <input id="od" type="number" min="1" value="30" style="width:60px;padding:6px;border:1px solid #d1d5db;border-radius:6px" />d <button class="btn btn-ghost" onclick="lP()">Apply</button></div>
+    </div>
+    <table class="data-table" id="pT"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Due</th><th>Inv.</th><th>Days</th></tr></thead><tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody></table>
+</div>
+</div>
+@section Scripts {
+<script>
+function show(w) {
+    ["R","H","P"].forEach(p => document.getElementById("pane"+p).style.display = (p===w?"block":"none"));
+    document.querySelectorAll(".btn").forEach(b => { if (b.onclick && /^show/.test(b.onclick.toString())) b.className = "btn btn-ghost"; });
+    event.target.className = "btn btn-primary";
+}
+async function lR() {
+    const tb = document.querySelector("#rT tbody");
+    try { const l = await API.fetch(`/api/staff/reports/regulars?minVisits=${document.getElementById("mv").value}&days=${document.getElementById("dy").value}`); tb.innerHTML = l.length===0?`<tr><td colspan="4" class="empty">None</td></tr>`:l.map(c=>`<tr><td><strong>${c.fullName}</strong></td><td>${c.email||"—"}</td><td><span class="badge badge-green">${c.visitCount}</span></td><td>${API.fmtDate(c.lastVisit)}</td></tr>`).join(""); }
+    catch (e) { tb.innerHTML = `<tr><td colspan="4" class="empty">${e.message}</td></tr>`; }
+}
+async function lH() {
+    const tb = document.querySelector("#hT tbody");
+    try { const l = await API.fetch(`/api/staff/reports/high-spenders?top=${document.getElementById("top").value}`); tb.innerHTML = l.length===0?`<tr><td colspan="4" class="empty">None</td></tr>`:l.map(c=>`<tr><td><strong>${c.fullName}</strong></td><td>${c.email||"—"}</td><td><strong>${API.fmtNPR(c.totalSpent)}</strong></td><td>${c.invoiceCount}</td></tr>`).join(""); }
+    catch (e) { tb.innerHTML = `<tr><td colspan="4" class="empty">${e.message}</td></tr>`; }
+}
+async function lP() {
+    const tb = document.querySelector("#pT tbody");
+    try { const l = await API.fetch(`/api/staff/reports/pending-credits?olderThanDays=${document.getElementById("od").value}`); tb.innerHTML = l.length===0?`<tr><td colspan="6" class="empty">None 🎉</td></tr>`:l.map(c=>`<tr><td><strong>${c.fullName}</strong></td><td>${c.email||"—"}</td><td>${c.phone||"—"}</td><td><strong style="color:#dc2626">${API.fmtNPR(c.totalDue)}</strong></td><td>${c.overdueInvoiceCount}</td><td><span class="badge badge-amber">${c.daysOverdue}d</span></td></tr>`).join(""); }
+    catch (e) { tb.innerHTML = `<tr><td colspan="6" class="empty">${e.message}</td></tr>`; }
+}
+lR();
+</script>
+}
