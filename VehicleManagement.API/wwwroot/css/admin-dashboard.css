@@ -1,0 +1,39 @@
+.admin-dashboard .brand-icon-admin { background: linear-gradient(135deg,#dc2626 0%,#b91c1c 100%); }
+.admin-dashboard .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-bottom:28px; }
+.admin-dashboard .stat-card { background:#fff; border-radius:12px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,.05); border:1px solid #e5e7eb; }
+.admin-dashboard .stat-card .stat-label { color:#6b7280; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; }
+.admin-dashboard .stat-card .stat-value { font-size:28px; font-weight:700; margin-top:8px; color:#111827; }
+.admin-dashboard .stat-card .stat-sub { font-size:12px; color:#6b7280; margin-top:4px; }
+.admin-dashboard .data-card { background:#fff; border-radius:12px; border:1px solid #e5e7eb; overflow:hidden; margin-bottom:24px; }
+.admin-dashboard .data-card-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #e5e7eb; gap:12px; flex-wrap:wrap; }
+.admin-dashboard .data-card-header h3 { margin:0; font-size:16px; font-weight:600; color:#111827; }
+.admin-dashboard table.data-table { width:100%; border-collapse:collapse; font-size:14px; }
+.admin-dashboard table.data-table th { text-align:left; padding:12px 20px; background:#f9fafb; color:#6b7280; font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid #e5e7eb; }
+.admin-dashboard table.data-table td { padding:14px 20px; border-bottom:1px solid #f3f4f6; color:#374151; }
+.admin-dashboard table.data-table tr:hover { background:#fafafa; }
+.admin-dashboard .badge { display:inline-block; padding:3px 10px; border-radius:10px; font-size:11px; font-weight:600; text-transform:uppercase; }
+.admin-dashboard .badge-green { background:#d1fae5; color:#065f46; }
+.admin-dashboard .badge-red { background:#fee2e2; color:#991b1b; }
+.admin-dashboard .badge-amber { background:#fef3c7; color:#92400e; }
+.admin-dashboard .badge-gray { background:#f3f4f6; color:#374151; }
+.admin-dashboard .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; border:1px solid transparent; text-decoration:none; transition:all .15s; }
+.admin-dashboard .btn-primary { background:#dc2626; color:#fff; }
+.admin-dashboard .btn-primary:hover { background:#b91c1c; }
+.admin-dashboard .btn-ghost { background:#f3f4f6; color:#374151; }
+.admin-dashboard .btn-ghost:hover { background:#e5e7eb; }
+.admin-dashboard .btn-danger { background:#fee2e2; color:#991b1b; }
+.admin-dashboard .btn-danger:hover { background:#fecaca; }
+.admin-dashboard .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:100; }
+.admin-dashboard .modal-overlay.active { display:flex; }
+.admin-dashboard .modal { background:#fff; border-radius:12px; padding:24px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; }
+.admin-dashboard .modal h3 { margin:0 0 16px; font-size:18px; color:#111827; }
+.admin-dashboard .form-row { margin-bottom:14px; }
+.admin-dashboard .form-row label { display:block; font-size:13px; font-weight:500; margin-bottom:6px; color:#374151; }
+.admin-dashboard .form-row input, .admin-dashboard .form-row select, .admin-dashboard .form-row textarea { width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; }
+.admin-dashboard .form-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
+.admin-dashboard .empty { text-align:center; padding:60px 20px; color:#6b7280; }
+.admin-dashboard .toast { position:fixed; bottom:20px; right:20px; background:#111827; color:#fff; padding:12px 20px; border-radius:8px; font-size:14px; z-index:200; display:none; }
+.admin-dashboard .toast.active { display:block; }
+.admin-dashboard .toast.error { background:#dc2626; }
+.admin-dashboard .toast.success { background:#059669; }
+.admin-dashboard .dash-page-title { font-size:24px; font-weight:700; margin-bottom:20px; color:#111827; }

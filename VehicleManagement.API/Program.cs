@@ -47,6 +47,18 @@ builder.Services.AddScoped<ICustomerVehicleService, CustomerVehicleService>();
 builder.Services.AddScoped<ICustomerServiceRepository, CustomerServiceRepository>();
 builder.Services.AddScoped<ICustomerServiceService, CustomerServiceService>();
 
+// === New feature services ===
+builder.Services.AddScoped<IVendorRepository, VendorRepository>();
+builder.Services.AddScoped<IVendorService, VendorService>();
+builder.Services.AddScoped<IPartRepository, PartRepository>();
+builder.Services.AddScoped<IPartService, PartService>();
+builder.Services.AddScoped<ISaleInvoiceRepository, SaleInvoiceRepository>();
+builder.Services.AddScoped<ISaleInvoiceService, SaleInvoiceService>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddHostedService<NotificationWorker>();
+
 // AUTHENTICATION
 builder.Services.AddAuthentication(options =>
 {
@@ -83,6 +95,44 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
+
+    // === Seed Identity roles + default admin ===
+    var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    foreach (var r in new[] { "Admin", "Staff", "Customer" })
+        if (!await roleMgr.RoleExistsAsync(r))
+            await roleMgr.CreateAsync(new IdentityRole(r));
+
+    var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var adminEmail = "admin@vms.local";
+    var admin = await userMgr.FindByEmailAsync(adminEmail);
+    if (admin == null)
+    {
+        admin = new ApplicationUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true,
+            FullName = "System Admin",
+            UserRole = "Admin"
+        };
+        var created = await userMgr.CreateAsync(admin, "Admin@123");
+        if (created.Succeeded) await userMgr.AddToRoleAsync(admin, "Admin");
+    }
+    else if (!await userMgr.IsInRoleAsync(admin, "Admin"))
+    {
+        await userMgr.AddToRoleAsync(admin, "Admin");
+    }
+
+    // Backfill role claims for existing users from their UserRole field
+    foreach (var u in userMgr.Users.ToList())
+    {
+        if (string.IsNullOrWhiteSpace(u.UserRole)) continue;
+        if (!await userMgr.IsInRoleAsync(u, u.UserRole))
+        {
+            if (await roleMgr.RoleExistsAsync(u.UserRole))
+                await userMgr.AddToRoleAsync(u, u.UserRole);
+        }
+    }
 }
 
 app.UseHttpsRedirection();

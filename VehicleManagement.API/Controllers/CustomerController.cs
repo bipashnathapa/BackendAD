@@ -22,6 +22,9 @@ public class CustomerController : Controller
     [HttpGet("/customer/settings")]
     public IActionResult Settings() => View();
 
+    [HttpGet("/customer/invoices")]
+    public IActionResult Invoices() => View();
+
     [HttpGet("/customer/profile")]
     public IActionResult Profile() => View("Profile");
 
