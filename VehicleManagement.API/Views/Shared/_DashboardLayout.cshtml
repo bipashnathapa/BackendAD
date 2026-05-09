@@ -47,6 +47,14 @@
                 <i data-lucide="layout-dashboard"></i>
                 Dashboard
             </a>
+            <a href="/customer/profile" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Profile", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                <i data-lucide="user"></i>
+                Profile
+            </a>
+            <a href="/customer/invoices" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Invoices", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                <i data-lucide="receipt"></i>
+                My Invoices
+            </a>
             <a href="/Customer/Settings" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Settings", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="settings"></i>
                 Settings
