@@ -171,7 +171,10 @@
       return;
     }
 
-    const nextUrl = role === "staff" ? "/staff" : "/customer";
+    const nextUrl =
+      role === "admin" ? "/admin/dashboard" :
+      role === "staff" ? "/staff/dashboard" :
+      "/customer/dashboard";
     dashboardLink.href = nextUrl;
     dashboardLink.style.display = "";
     if (loginLink) loginLink.style.display = "none";
