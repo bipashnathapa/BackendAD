@@ -57,6 +57,8 @@ builder.Services.AddScoped<ISaleInvoiceRepository, SaleInvoiceRepository>();
 builder.Services.AddScoped<ISaleInvoiceService, SaleInvoiceService>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IStaffServiceRequestsRepository, StaffServiceRequestsRepository>();
+builder.Services.AddScoped<IStaffServiceRequestsService, StaffServiceRequestsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHostedService<NotificationWorker>();
 

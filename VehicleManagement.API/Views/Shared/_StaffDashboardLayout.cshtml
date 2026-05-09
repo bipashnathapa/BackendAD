@@ -61,6 +61,10 @@
                 <i data-lucide="users"></i>
                 Customers
             </a>
+            <a href="/staff/service-requests" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "ServiceRequests", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                <i data-lucide="clipboard-list"></i>
+                Service Requests
+            </a>
             <a href="/staff/low-stock" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "LowStock", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="layers"></i>
                 Inventory

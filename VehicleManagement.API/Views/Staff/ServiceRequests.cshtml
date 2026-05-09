@@ -1,0 +1,265 @@
+@{
+    ViewData["Title"] = "Service Requests";
+    Layout = "_StaffDashboardLayout";
+}
+
+<div class="staff-header-actions">
+    <p class="sys-healthy">Manage customer appointments and part requests.</p>
+    <div class="header-btns">
+        <button class="btn-outline-dark" type="button" id="refreshBtn">
+            <i data-lucide="refresh-cw" style="width:16px;"></i>
+            Refresh
+        </button>
+    </div>
+</div>
+
+<div class="staff-main-grid">
+    <div class="staff-left-col">
+        <div class="dash-card">
+            <div class="card-hd-flex">
+                <h3>Appointments</h3>
+                <div style="display:flex;gap:10px;align-items:center">
+                    <select id="apptStatusFilter" class="dash-input" style="height:36px">
+                        <option value="">All</option>
+                        <option>Pending</option>
+                        <option>Approved</option>
+                        <option>Completed</option>
+                        <option>Cancelled</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="staff-table">
+                <thead>
+                <tr>
+                    <th>CUSTOMER</th>
+                    <th>VEHICLE</th>
+                    <th>DATE</th>
+                    <th>SERVICE</th>
+                    <th>STATUS</th>
+                    <th>ACTION</th>
+                </tr>
+                </thead>
+                <tbody id="apptBody">
+                <tr><td colspan="6" class="txt-muted">Loading…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="staff-right-col">
+        <div class="dash-card">
+            <div class="card-hd-flex">
+                <h3>Part Requests</h3>
+                <select id="partStatusFilter" class="dash-input" style="height:36px">
+                    <option value="">All</option>
+                    <option>Requested</option>
+                    <option>Ordered</option>
+                    <option>Received</option>
+                    <option>Cancelled</option>
+                </select>
+            </div>
+
+            <table class="staff-table">
+                <thead>
+                <tr>
+                    <th>REQUEST</th>
+                    <th>CUSTOMER</th>
+                    <th>QTY</th>
+                    <th>STATUS</th>
+                    <th>ACTION</th>
+                </tr>
+                </thead>
+                <tbody id="partBody">
+                <tr><td colspan="5" class="txt-muted">Loading…</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="dash-card" style="margin-top:18px">
+            <div class="card-hd-title">
+                <i data-lucide="message-square" class="txt-blue" style="width:18px;"></i>
+                <h3>Latest Reviews</h3>
+            </div>
+            <div id="reviewList" class="txt-muted">Loading…</div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const token = localStorage.getItem("vm_token") || "";
+            if (!token) { window.location.href = "/login"; return; }
+            const role = (window.VM?.getUserRole?.() || "").toLowerCase();
+            if (role && role !== "staff" && role !== "admin") { window.location.href = "/customer"; return; }
+
+            const el = (id) => document.getElementById(id);
+
+            function escapeHtml(s) {
+                return String(s ?? "")
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll("\"", "&quot;")
+                    .replaceAll("'", "&#039;");
+            }
+
+            async function loadAppointments() {
+                const tb = el("apptBody");
+                const status = el("apptStatusFilter").value;
+                tb.innerHTML = `<tr><td colspan="6" class="txt-muted">Loading…</td></tr>`;
+                try {
+                    const q = status ? `?status=${encodeURIComponent(status)}&take=50` : `?take=50`;
+                    const list = await window.API.fetch(`/api/staff/service-requests/appointments${q}`);
+                    if (!Array.isArray(list) || list.length === 0) {
+                        tb.innerHTML = `<tr><td colspan="6" class="empty">No appointments.</td></tr>`;
+                        return;
+                    }
+                    tb.innerHTML = list.map(a => {
+                        const customer = escapeHtml(a.customerName || a.customerEmail || "—");
+                        const vehicle = escapeHtml([a.vehicleNo, a.vehicleBrand, a.vehicleModel].filter(Boolean).join(" • "));
+                        const date = window.API.fmtDate(a.appointmentDate);
+                        const service = escapeHtml(a.serviceType || "—");
+                        const current = escapeHtml(a.status || "Pending");
+                        return `
+                            <tr data-id="${a.appointmentId}">
+                                <td><strong>${customer}</strong><div class="txt-muted" style="font-size:12px">${escapeHtml(a.customerEmail || "")}</div></td>
+                                <td class="txt-muted">${vehicle || "—"}</td>
+                                <td>${date}</td>
+                                <td>${service}</td>
+                                <td>
+                                    <select class="dash-input apptStatus" style="height:32px">
+                                        ${["Pending","Approved","Completed","Cancelled"].map(s => `<option ${s===a.status?"selected":""}>${s}</option>`).join("")}
+                                    </select>
+                                </td>
+                                <td>
+                                    <button class="btn-sm-blue apptSave" type="button">Update</button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join("");
+                } catch (e) {
+                    tb.innerHTML = `<tr><td colspan="6" class="txt-muted">Couldn’t load appointments.</td></tr>`;
+                }
+            }
+
+            async function loadParts() {
+                const tb = el("partBody");
+                const status = el("partStatusFilter").value;
+                tb.innerHTML = `<tr><td colspan="5" class="txt-muted">Loading…</td></tr>`;
+                try {
+                    const q = status ? `?status=${encodeURIComponent(status)}&take=50` : `?take=50`;
+                    const list = await window.API.fetch(`/api/staff/service-requests/parts${q}`);
+                    if (!Array.isArray(list) || list.length === 0) {
+                        tb.innerHTML = `<tr><td colspan="5" class="empty">No requests.</td></tr>`;
+                        return;
+                    }
+                    tb.innerHTML = list.map(p => {
+                        const req = escapeHtml(p.partName || "—");
+                        const qty = escapeHtml(p.quantity ?? "—");
+                        const customer = escapeHtml(p.customerName || p.customerEmail || "—");
+                        return `
+                            <tr data-id="${p.partRequestId}">
+                                <td><strong>${req}</strong><div class="txt-muted" style="font-size:12px">${escapeHtml(p.vehicleModel || p.vehicleNo || "")}</div></td>
+                                <td class="txt-muted">${customer}</td>
+                                <td>${qty}</td>
+                                <td>
+                                    <select class="dash-input partStatus" style="height:32px">
+                                        ${["Requested","Ordered","Received","Cancelled"].map(s => `<option ${s===p.status?"selected":""}>${s}</option>`).join("")}
+                                    </select>
+                                </td>
+                                <td>
+                                    <button class="btn-sm-blue partSave" type="button">Update</button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join("");
+                } catch (e) {
+                    tb.innerHTML = `<tr><td colspan="5" class="txt-muted">Couldn’t load requests.</td></tr>`;
+                }
+            }
+
+            async function loadReviews() {
+                const box = el("reviewList");
+                box.textContent = "Loading…";
+                try {
+                    const list = await window.API.fetch(`/api/staff/service-requests/reviews?take=10`);
+                    if (!Array.isArray(list) || list.length === 0) {
+                        box.textContent = "No reviews yet.";
+                        return;
+                    }
+                    box.innerHTML = list.map(r => {
+                        const who = escapeHtml(r.customerName || r.customerEmail || "—");
+                        const stars = "★★★★★".slice(0, Math.max(0, Math.min(5, r.rating || 0)));
+                        const date = window.API.fmtDate(r.reviewedAt);
+                        const comment = escapeHtml(r.comment || "");
+                        return `
+                            <div class="list-item ${r === list[list.length - 1] ? "border-none" : ""}">
+                                <div class="list-details">
+                                    <strong>${who}</strong>
+                                    <span>${escapeHtml(stars)} • ${date}</span>
+                                </div>
+                                <div class="txt-muted" style="font-size:12px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${comment}</div>
+                            </div>
+                        `;
+                    }).join("");
+                } catch {
+                    box.textContent = "Couldn’t load reviews.";
+                }
+            }
+
+            async function updateAppointmentStatus(row) {
+                const id = row.getAttribute("data-id");
+                const sel = row.querySelector(".apptStatus");
+                const status = sel ? sel.value : "";
+                await window.API.fetch(`/api/staff/service-requests/appointments/${id}/status`, {
+                    method: "PUT",
+                    body: JSON.stringify({ status })
+                });
+                window.API.toast("Appointment updated");
+            }
+
+            async function updatePartStatus(row) {
+                const id = row.getAttribute("data-id");
+                const sel = row.querySelector(".partStatus");
+                const status = sel ? sel.value : "";
+                await window.API.fetch(`/api/staff/service-requests/parts/${id}/status`, {
+                    method: "PUT",
+                    body: JSON.stringify({ status })
+                });
+                window.API.toast("Request updated");
+            }
+
+            document.addEventListener("click", async (e) => {
+                const btn = e.target.closest("button");
+                if (!btn) return;
+                try {
+                    if (btn.classList.contains("apptSave")) {
+                        await updateAppointmentStatus(btn.closest("tr"));
+                        await loadAppointments();
+                    }
+                    if (btn.classList.contains("partSave")) {
+                        await updatePartStatus(btn.closest("tr"));
+                        await loadParts();
+                    }
+                    if (btn.id === "refreshBtn") {
+                        await Promise.all([loadAppointments(), loadParts(), loadReviews()]);
+                    }
+                } catch (err) {
+                    window.API.toast(err.message || "Update failed", "error");
+                }
+            });
+
+            document.addEventListener("DOMContentLoaded", () => {
+                el("apptStatusFilter").addEventListener("change", loadAppointments);
+                el("partStatusFilter").addEventListener("change", loadParts);
+                el("refreshBtn").addEventListener("click", () => {});
+                loadAppointments();
+                loadParts();
+                loadReviews();
+            });
+        })();
+    </script>
+}
+
