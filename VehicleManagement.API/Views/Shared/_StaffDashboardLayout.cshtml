@@ -37,11 +37,11 @@
         </div>
 
         <nav class="dash-nav light-nav">
-            <a href="/staff/dashboard" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/staff/dashboard" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="layout-dashboard"></i>
                 Dashboard
             </a>
-            <a href="/staff/customers" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Customers", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/staff/customers" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Customers", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="users"></i>
                 Customers
             </a>

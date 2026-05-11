@@ -29,8 +29,8 @@ public class CustomerVehicleService : ICustomerVehicleService
         {
             VehicleNo = dto.VehicleNo,
             Brand = dto.Brand,
-            Model = dto.Model,
-            Type = dto.Type,
+            Model = dto.Model ?? "",
+            Type = dto.Type ?? "",
             CustomerID = customer.CustomerID
         };
 

@@ -7,4 +7,5 @@ public interface IStaffService
 {
     Task<(IdentityResult Result, StaffRegisterCustomerResultDto? Data)> RegisterCustomerWithVehicleAsync(StaffRegisterCustomerDto model);
     Task<IReadOnlyList<StaffCustomerSearchResultDto>> SearchCustomersAsync(string search, int take = 20);
+    Task<StaffCustomerDetailsDto?> GetCustomerDetailsAsync(int customerId);
 }
