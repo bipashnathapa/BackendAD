@@ -27,6 +27,14 @@ public class StaffController : Controller
         var customers = await _staffService.SearchCustomersAsync("");
         return View("Customer", customers);
     }
+
+    [HttpGet("/staff/customers/{id}")]
+    public async Task<IActionResult> Details(int id)
+    {
+        var details = await _staffService.GetCustomerDetailsAsync(id);
+        if (details == null) return NotFound();
+        return View(details);
+    }
 }
 
 
