@@ -50,6 +50,7 @@ public class SaleInvoiceDTO
     public string InvoiceNumber { get; set; } = string.Empty;
     public int CustomerID { get; set; }
     public string CustomerName { get; set; } = string.Empty;
+    public string? CustomerEmail { get; set; }
     public string StaffName { get; set; } = string.Empty;
     public decimal SubTotal { get; set; }
     public decimal Discount { get; set; }
@@ -60,6 +61,8 @@ public class SaleInvoiceDTO
     public string PaymentStatus { get; set; } = string.Empty;
     public string? PaymentMethod { get; set; }
     public DateTime InvoiceDate { get; set; }
+    public bool InvoiceEmailSent { get; set; }
+    public bool LowStockAlertSent { get; set; }
     public List<SaleInvoiceItemDTO> Items { get; set; } = new();
 }
 

@@ -171,6 +171,7 @@
     bindTopbar,
     wireNav,
     setToken,
+    getToken,
     clearAuth,
     showToast,
     storageKeys,

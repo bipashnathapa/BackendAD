@@ -7,7 +7,7 @@ using Vehicle.Application.Interface.IServices;
 namespace Vehicle.Infrastructure.Service;
 
 // Sends mail via SMTP if configured; otherwise logs the message.
-// Configure under "Smtp": { "Host", "Port", "User", "Pass", "From", "Enabled": true }
+// Configure under "Smtp": { "Host", "Port", "User", "Pass", "From", "FromName", "Enabled": true }
 public class EmailService : IEmailService
 {
     private readonly IConfiguration _cfg;
@@ -30,15 +30,34 @@ public class EmailService : IEmailService
 
         var host = _cfg["Smtp:Host"]!;
         var port = _cfg.GetValue<int>("Smtp:Port", 587);
+        var enableSsl = _cfg.GetValue("Smtp:EnableSsl", true);
         var user = _cfg["Smtp:User"];
         var pass = _cfg["Smtp:Pass"];
-        var from = _cfg["Smtp:From"] ?? user ?? "no-reply@localhost";
+        var from = _cfg["Smtp:From"] ?? user;
+        var fromName = _cfg["Smtp:FromName"] ?? "Vehicle Management";
 
-        using var client = new SmtpClient(host, port) { EnableSsl = true };
-        if (!string.IsNullOrWhiteSpace(user))
-            client.Credentials = new NetworkCredential(user, pass);
+        if (string.IsNullOrWhiteSpace(user) ||
+            string.IsNullOrWhiteSpace(pass) ||
+            string.IsNullOrWhiteSpace(from))
+        {
+            throw new InvalidOperationException("SMTP credentials are not configured.");
+        }
 
-        var msg = new MailMessage(from, to, subject, body) { IsBodyHtml = true };
+        using var client = new SmtpClient(host, port)
+        {
+            EnableSsl = enableSsl,
+            Credentials = new NetworkCredential(user, pass),
+            DeliveryMethod = SmtpDeliveryMethod.Network
+        };
+
+        using var msg = new MailMessage
+        {
+            From = new MailAddress(from, fromName),
+            Subject = subject,
+            Body = body,
+            IsBodyHtml = true
+        };
+        msg.To.Add(new MailAddress(to));
         try
         {
             await client.SendMailAsync(msg);
@@ -47,6 +66,7 @@ public class EmailService : IEmailService
         catch (Exception ex)
         {
             _log.LogError(ex, "Failed to send email to {To}", to);
+            throw;
         }
     }
 }
