@@ -9,12 +9,14 @@ namespace Vehicle.Infrastructure.Service;
 public class AuthService : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly ApplicationDbContext _context;
     private readonly IJwtTokenService _jwtTokenService;
 
-    public AuthService(UserManager<ApplicationUser> userManager, ApplicationDbContext context, IJwtTokenService jwtTokenService)
+    public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context, IJwtTokenService jwtTokenService)
     {
         _userManager = userManager;
+        _roleManager = roleManager;
         _context = context;
         _jwtTokenService = jwtTokenService;
     }
@@ -36,16 +38,32 @@ public class AuthService : IAuthService
         // 2. If Identity creation succeeded, link to Customer/Staff tables
         if (result.Succeeded)
         {
-            if (model.UserRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                _context.Customers.Add(new Customer { UserID = user.Id });
+                if (model.UserRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
+                {
+                    _context.Customers.Add(new Customer { UserID = user.Id, User = user });
+                }
+                else if (model.UserRole.Equals("Staff", StringComparison.OrdinalIgnoreCase))
+                {
+                    _context.Staffs.Add(new Staff { UserID = user.Id, User = user });
+                }
+
+                await _context.SaveChangesAsync();
             }
-            else if (model.UserRole.Equals("Staff", StringComparison.OrdinalIgnoreCase))
+            catch (Exception ex)
             {
-                _context.Staffs.Add(new Staff { UserID = user.Id });
+                // If adding customer/staff fails, delete the user and return error
+                await _userManager.DeleteAsync(user);
+                return IdentityResult.Failed(new IdentityError { Description = $"Failed to create user role record: {ex.Message}" });
             }
 
             await _context.SaveChangesAsync();
+
+            // Ensure Identity role exists, then add user to it
+            if (!await _roleManager.RoleExistsAsync(model.UserRole))
+                await _roleManager.CreateAsync(new IdentityRole(model.UserRole));
+            await _userManager.AddToRoleAsync(user, model.UserRole);
         }
 
         return result;

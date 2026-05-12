@@ -1,0 +1,23 @@
+@{ ViewData["Title"]="My Invoices"; Layout="_DashboardLayout"; }
+<link rel="stylesheet" href="~/css/admin-dashboard.css" />
+<div class="admin-dashboard">
+<h1 class="dash-page-title">My Invoices</h1>
+<div class="data-card">
+    <table class="data-table" id="mT"><thead><tr><th>Invoice #</th><th>Date</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th></tr></thead><tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody></table>
+</div>
+</div>
+@section Scripts {
+<script>
+(async () => {
+    const tb = document.querySelector("#mT tbody");
+    try {
+        const list = await API.fetch("/api/customer/invoices").catch(()=>[]);
+        if (!list || list.length===0) { tb.innerHTML = `<tr><td colspan="6" class="empty">No invoices yet</td></tr>`; return; }
+        tb.innerHTML = list.map(i => {
+            const s = i.paymentStatus==="Paid"?'<span class="badge badge-green">Paid</span>':i.paymentStatus==="PartiallyPaid"?'<span class="badge badge-amber">Partial</span>':'<span class="badge badge-red">Credit</span>';
+            return `<tr><td><strong>${i.invoiceNumber}</strong></td><td>${API.fmtDate(i.invoiceDate)}</td><td>${API.fmtNPR(i.totalAmount)}</td><td>${API.fmtNPR(i.amountPaid)}</td><td>${i.amountDue>0?`<strong style="color:#dc2626">${API.fmtNPR(i.amountDue)}</strong>`:"—"}</td><td>${s}</td></tr>`;
+        }).join("");
+    } catch (e) { tb.innerHTML = `<tr><td colspan="6" class="empty">${e.message}</td></tr>`; }
+})();
+</script>
+}

@@ -1,0 +1,38 @@
+@{ ViewData["Title"]="Invoice"; Layout="_StaffDashboardLayout"; var id=ViewData["InvoiceId"]; }
+<link rel="stylesheet" href="~/css/admin-dashboard.css" />
+<div class="admin-dashboard">
+<h1 class="dash-page-title">Invoice <span id="iN" style="color:#6b7280;font-weight:500"></span></h1>
+<div id="body" class="data-card" style="padding:30px"><div class="empty">Loading…</div></div>
+</div>
+@section Scripts {
+<script>
+const id = "@id";
+(async () => {
+    try {
+        const inv = await API.fetch(`/api/staff/sales/invoices/${id}`);
+        document.getElementById("iN").textContent = inv.invoiceNumber;
+        const items = inv.items.map(it => `<tr><td>${it.partName}</td><td>${it.quantity}</td><td>${API.fmtNPR(it.unitPrice)}</td><td>${API.fmtNPR(it.lineTotal)}</td></tr>`).join("");
+        const sb = inv.paymentStatus==="Paid" ? `<span class="badge badge-green">Paid</span>` : inv.paymentStatus==="PartiallyPaid" ? `<span class="badge badge-amber">Partial</span>` : `<span class="badge badge-red">Credit</span>`;
+        document.getElementById("body").innerHTML = `
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+                <div><div style="color:#6b7280;font-size:13px">Customer</div><div style="font-size:18px;font-weight:600">${inv.customerName}</div></div>
+                <div style="text-align:right"><div style="color:#6b7280;font-size:13px">Date</div><div>${API.fmtDate(inv.invoiceDate)}</div><div style="margin-top:8px">${sb}</div></div>
+            </div>
+            <table class="data-table"><thead><tr><th>Part</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead><tbody>${items}</tbody></table>
+            <div style="display:flex;justify-content:flex-end;margin-top:20px"><div style="min-width:280px">
+                <div style="display:flex;justify-content:space-between;color:#6b7280;font-size:13px;margin-bottom:6px"><span>Subtotal</span><span>${API.fmtNPR(inv.subTotal)}</span></div>
+                <div style="display:flex;justify-content:space-between;color:#6b7280;font-size:13px;margin-bottom:6px"><span>Discount</span><span>− ${API.fmtNPR(inv.discount)}</span></div>
+                <div style="display:flex;justify-content:space-between;color:#6b7280;font-size:13px;margin-bottom:6px"><span>Tax</span><span>${API.fmtNPR(inv.tax)}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:700;border-top:1px solid #e5e7eb;padding-top:8px;margin-top:8px"><span>Total</span><span>${API.fmtNPR(inv.totalAmount)}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;color:#059669;margin-top:6px"><span>Paid (${inv.paymentMethod||"—"})</span><span>${API.fmtNPR(inv.amountPaid)}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;color:${inv.amountDue>0?"#dc2626":"#059669"};margin-top:4px"><span>Due</span><span>${API.fmtNPR(inv.amountDue)}</span></div>
+            </div></div>
+            <div style="margin-top:24px;text-align:right">
+                <button class="btn btn-ghost" onclick="window.print()"><i data-lucide="printer" style="width:14px;height:14px"></i> Print</button>
+                <a href="/staff/new-sale" class="btn btn-primary"><i data-lucide="plus" style="width:14px;height:14px"></i> New Sale</a>
+            </div>`;
+        lucide.createIcons();
+    } catch (e) { document.getElementById("body").innerHTML = `<div class="empty">${e.message}</div>`; }
+})();
+</script>
+}

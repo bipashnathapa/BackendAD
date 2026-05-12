@@ -1,0 +1,65 @@
+@{ Layout = null; }
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] • Admin Console</title>
+    <link rel="stylesheet" href="~/css/dashboard.css" />
+    <link rel="stylesheet" href="~/css/staff-dashboard.css" />
+    <link rel="stylesheet" href="~/css/admin-dashboard.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="dashboard-layout staff-dashboard admin-dashboard">
+    <aside class="dash-sidebar dark-sidebar">
+        <div class="dash-brand">
+            <div class="brand-icon-box brand-icon-admin"><i data-lucide="shield"></i></div>
+            <div class="brand-text">
+                <span class="brand-title">VMS Admin</span>
+                <span class="brand-subtitle">CONSOLE</span>
+            </div>
+        </div>
+        <nav class="dash-nav dark-nav">
+            <a href="/admin/dashboard" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")"><i data-lucide="layout-dashboard"></i> Overview</a>
+            <a href="/admin/vendors"   class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Vendors",   StringComparison.OrdinalIgnoreCase) ? "active" : "")"><i data-lucide="truck"></i> Vendors</a>
+            <a href="/admin/parts"     class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Parts",     StringComparison.OrdinalIgnoreCase) ? "active" : "")"><i data-lucide="package"></i> Parts</a>
+            <a href="/admin/low-stock" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "LowStock",  StringComparison.OrdinalIgnoreCase) ? "active" : "")"><i data-lucide="alert-triangle"></i> Low Stock</a>
+            <a href="/admin/reports"   class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Reports",   StringComparison.OrdinalIgnoreCase) ? "active" : "")"><i data-lucide="bar-chart-2"></i> Reports</a>
+        </nav>
+        <div class="dash-sidebar-footer dark-footer">
+            <a href="#" class="dash-nav-item" id="adminLogoutBtn"><i data-lucide="log-out"></i> Logout</a>
+        </div>
+    </aside>
+    <div class="dash-main">
+        <header class="dash-header light-header">
+            <div class="dash-search expand-search">
+                <i data-lucide="search" style="color:var(--dash-muted);width:16px;"></i>
+                <input type="text" placeholder="Search..." />
+            </div>
+            <div class="dash-header-actions">
+                <button class="dash-icon-btn"><i data-lucide="bell"></i></button>
+                <div class="user-profile">
+                    <div class="user-text">
+                        <span class="user-name" id="adminUserName">Admin</span>
+                        <span class="user-role">ADMINISTRATOR</span>
+                    </div>
+                    <img id="adminAvatar" src="https://ui-avatars.com/api/?name=Admin&background=dc2626&color=fff&rounded=true" alt="Avatar" />
+                </div>
+            </div>
+        </header>
+        <main class="dash-content bg-gray">@RenderBody()</main>
+    </div>
+    <script src="~/js/site.js"></script>
+    <script src="~/js/api-client.js"></script>
+    <script>
+        lucide.createIcons();
+        document.addEventListener("DOMContentLoaded", () => {
+            const display = (window.VM?.getUserDisplayName?.() || "Admin").trim();
+            const n = document.getElementById("adminUserName"); if (n) n.textContent = display;
+            const a = document.getElementById("adminAvatar"); if (a) a.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(display)}&background=dc2626&color=fff&rounded=true`;
+            document.getElementById("adminLogoutBtn")?.addEventListener("click", e => { e.preventDefault(); window.VM?.clearAuth(); location.href = "/login"; });
+        });
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

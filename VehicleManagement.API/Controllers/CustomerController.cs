@@ -19,8 +19,14 @@ public class CustomerController : Controller
     [HttpGet("/customer/dashboard")]
     public IActionResult Dashboard() => View("CustomerDashboard");
 
+    [HttpGet("/customer/history")]
+    public IActionResult History() => View();
+
     [HttpGet("/customer/settings")]
     public IActionResult Settings() => View();
+
+    [HttpGet("/customer/invoices")]
+    public IActionResult Invoices() => View();
 
     [HttpGet("/customer/profile")]
     public IActionResult Profile() => View("Profile");
