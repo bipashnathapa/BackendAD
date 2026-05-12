@@ -46,6 +46,19 @@ builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerVehicleService, CustomerVehicleService>();
 builder.Services.AddScoped<ICustomerServiceRepository, CustomerServiceRepository>();
 builder.Services.AddScoped<ICustomerServiceService, CustomerServiceService>();
+builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
+
+// === New feature services ===
+builder.Services.AddScoped<IVendorRepository, VendorRepository>();
+builder.Services.AddScoped<IVendorService, VendorService>();
+builder.Services.AddScoped<IPartRepository, PartRepository>();
+builder.Services.AddScoped<IPartService, PartService>();
+builder.Services.AddScoped<ISaleInvoiceRepository, SaleInvoiceRepository>();
+builder.Services.AddScoped<ISaleInvoiceService, SaleInvoiceService>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddHostedService<NotificationWorker>();
 
 // AUTHENTICATION
 builder.Services.AddAuthentication(options =>

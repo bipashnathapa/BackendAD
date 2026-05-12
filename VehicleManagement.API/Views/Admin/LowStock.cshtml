@@ -1,0 +1,19 @@
+@{ ViewData["Title"]="Low Stock"; Layout="_AdminDashboardLayout"; }
+<h1 class="dash-page-title">Low Stock Alerts</h1>
+<p style="color:#6b7280;margin-bottom:24px">Background notifier emails admins automatically every 6 hours.</p>
+<div class="data-card">
+    <table class="data-table" id="lsT"><thead><tr><th>Part</th><th>Code</th><th>Stock</th><th>Threshold</th><th>Vendor</th></tr></thead><tbody><tr><td colspan="5" class="empty">Loading…</td></tr></tbody></table>
+</div>
+@section Scripts {
+<script>
+(async () => {
+    const tb = document.querySelector("#lsT tbody");
+    try {
+        const list = await API.fetch("/api/parts/low-stock");
+        tb.innerHTML = list.length === 0
+            ? `<tr><td colspan="5" class="empty">All healthy ✅</td></tr>`
+            : list.map(p => `<tr><td><strong>${p.partName}</strong></td><td>${p.partCode||"—"}</td><td><span class="badge badge-red">${p.stockQuantity}</span></td><td>${p.lowStockThreshold}</td><td>${p.vendorName||"—"}</td></tr>`).join("");
+    } catch (e) { tb.innerHTML = `<tr><td colspan="5" class="empty">${e.message}</td></tr>`; }
+})();
+</script>
+}

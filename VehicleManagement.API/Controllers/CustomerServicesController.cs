@@ -83,4 +83,14 @@ public class CustomerServicesController : ControllerBase
         var reviews = await _customerServiceService.GetMyServiceReviewsAsync(userId);
         return Ok(reviews);
     }
+
+    [HttpGet("history")]
+    public async Task<IActionResult> GetMyHistory()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var history = await _customerServiceService.GetMyHistoryAsync(userId);
+        return Ok(history);
+    }
 }
