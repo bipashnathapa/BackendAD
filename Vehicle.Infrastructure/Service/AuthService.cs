@@ -9,12 +9,14 @@ namespace Vehicle.Infrastructure.Service;
 public class AuthService : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly ApplicationDbContext _context;
     private readonly IJwtTokenService _jwtTokenService;
 
-    public AuthService(UserManager<ApplicationUser> userManager, ApplicationDbContext context, IJwtTokenService jwtTokenService)
+    public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context, IJwtTokenService jwtTokenService)
     {
         _userManager = userManager;
+        _roleManager = roleManager;
         _context = context;
         _jwtTokenService = jwtTokenService;
     }
@@ -55,6 +57,13 @@ public class AuthService : IAuthService
                 await _userManager.DeleteAsync(user);
                 return IdentityResult.Failed(new IdentityError { Description = $"Failed to create user role record: {ex.Message}" });
             }
+
+            await _context.SaveChangesAsync();
+
+            // Ensure Identity role exists, then add user to it
+            if (!await _roleManager.RoleExistsAsync(model.UserRole))
+                await _roleManager.CreateAsync(new IdentityRole(model.UserRole));
+            await _userManager.AddToRoleAsync(user, model.UserRole);
         }
 
         return result;

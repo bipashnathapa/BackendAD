@@ -16,6 +16,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<PartRequest> PartRequests { get; set; }
     public DbSet<ServiceReview> ServiceReviews { get; set; }
+    public DbSet<Vendor> Vendors { get; set; }
+    public DbSet<Part> Parts { get; set; }
+    public DbSet<SaleInvoice> SaleInvoices { get; set; }
+    public DbSet<SaleInvoiceItem> SaleInvoiceItems { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
