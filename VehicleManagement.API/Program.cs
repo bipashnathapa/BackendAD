@@ -46,6 +46,7 @@ builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerVehicleService, CustomerVehicleService>();
 builder.Services.AddScoped<ICustomerServiceRepository, CustomerServiceRepository>();
 builder.Services.AddScoped<ICustomerServiceService, CustomerServiceService>();
+builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
 
 // === New feature services ===
 builder.Services.AddScoped<IVendorRepository, VendorRepository>();

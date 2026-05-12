@@ -57,7 +57,7 @@
                 <i data-lucide="package"></i>
                 New Sale
             </a>
-            <a href="/staff" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/staff" class="dash-nav-item @(string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="users"></i>
                 Customers
             </a>

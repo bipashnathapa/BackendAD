@@ -43,7 +43,7 @@
         </div>
 
         <nav class="dash-nav">
-            <a href="/Customer/Dashboard" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Dashboard", StringComparison.OrdinalIgnoreCase) || string.Equals((string)ViewContext.RouteData.Values["Action"], "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/Customer/Dashboard" class="dash-nav-item @(string.Equals(currentAction, "Dashboard", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="layout-dashboard"></i>
                 Dashboard
             </a>
