@@ -21,9 +21,34 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDTO model)
     {
-        var result = await _authService.RegisterAsync(model);
+        return await RequestRegistrationOtp(model);
+    }
+
+    [HttpPost("register/request-otp")]
+    public async Task<IActionResult> RequestRegistrationOtp(RegisterDTO model)
+    {
+        IdentityResult result;
+        try
+        {
+            result = await _authService.RequestRegistrationOtpAsync(model, HttpContext.RequestAborted);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
         
         if (result.Succeeded) 
+            return Ok(new { message = "OTP sent to the email address. Verify the code to complete registration." });
+
+        return BadRequest(result.Errors);
+    }
+
+    [HttpPost("register/verify-otp")]
+    public async Task<IActionResult> VerifyRegistrationOtp(OtpVerificationDto model)
+    {
+        var result = await _authService.VerifyRegistrationOtpAsync(model);
+
+        if (result.Succeeded)
             return Ok(new { message = "Registration successful!" });
 
         return BadRequest(result.Errors);

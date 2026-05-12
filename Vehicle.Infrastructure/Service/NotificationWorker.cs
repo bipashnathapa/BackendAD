@@ -54,17 +54,23 @@ public class NotificationWorker : BackgroundService
         var email = scope.ServiceProvider.GetRequiredService<IEmailService>();
         var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        // ---------- Low stock -> email all admins ----------
+        // ---------- Low stock -> email staff and admins ----------
         var lowStock = await db.Parts
             .Include(p => p.Vendor)
-            .Where(p => p.IsActive && p.StockQuantity < p.LowStockThreshold)
+            .Where(p => p.IsActive && p.StockQuantity <= p.LowStockThreshold)
             .ToListAsync(ct);
 
         if (lowStock.Count > 0)
         {
             var admins = await userMgr.GetUsersInRoleAsync("Admin");
-            if (admins.Count == 0)
-                _log.LogWarning("Low stock detected but no Admin users to notify.");
+            var staff = await userMgr.GetUsersInRoleAsync("Staff");
+            var recipients = admins
+                .Concat(staff)
+                .Where(u => !string.IsNullOrWhiteSpace(u.Email))
+                .DistinctBy(u => u.Email)
+                .ToList();
+            if (recipients.Count == 0)
+                _log.LogWarning("Low stock detected but no staff/admin users to notify.");
 
             var rows = string.Join("", lowStock.Select(p =>
                 $"<tr><td>{p.PartName}</td><td>{p.PartCode}</td><td>{p.StockQuantity}</td><td>{p.LowStockThreshold}</td><td>{p.Vendor?.Name ?? "-"}</td></tr>"));
@@ -75,10 +81,9 @@ public class NotificationWorker : BackgroundService
 {rows}
 </table>";
 
-            foreach (var admin in admins)
+            foreach (var recipient in recipients)
             {
-                if (string.IsNullOrWhiteSpace(admin.Email)) continue;
-                await email.SendAsync(admin.Email, "[VMS] Low stock alert", html);
+                await email.SendAsync(recipient.Email!, "[VMS] Low stock alert", html);
             }
         }
 

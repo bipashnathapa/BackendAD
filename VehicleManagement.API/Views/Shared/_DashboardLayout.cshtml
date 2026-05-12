@@ -4,6 +4,7 @@
 @inject SignInManager<ApplicationUser> SignInManager
 
 @{
+    var currentAction = Convert.ToString(ViewContext.RouteData.Values["Action"]);
     var currentUser = await UserManager.GetUserAsync(User);
     
     // For demonstration: If no user is authenticated, fetch the first user from the DB

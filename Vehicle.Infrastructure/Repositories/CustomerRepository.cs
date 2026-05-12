@@ -28,15 +28,20 @@ public class CustomerRepository : ICustomerRepository
 
     public async Task<IReadOnlyList<Customer>> SearchAsync(string search, int take = 20)
     {
-        if (string.IsNullOrWhiteSpace(search))
-            return Array.Empty<Customer>();
-
-        search = search.Trim();
-
         var query = _context.Customers
             .Include(c => c.User)
             .Include(c => c.Vehicles)
             .AsQueryable();
+
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            return await query
+                .OrderByDescending(c => c.CustomerID)
+                .Take(take)
+                .ToListAsync();
+        }
+
+        search = search.Trim();
 
         if (int.TryParse(search, out var customerId))
         {

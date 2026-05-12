@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>VehicleManagement</RootNamespace>
+        <UserSecretsId>vehicle-management-api-local-secrets</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
