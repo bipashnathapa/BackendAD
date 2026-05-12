@@ -63,8 +63,8 @@ public class StaffService : IStaffService
         {
             VehicleNo = model.VehicleNo,
             Brand = model.Brand,
-            Model = model.Model,
-            Type = model.Type,
+            Model = model.Model ?? "",
+            Type = model.Type ?? "",
             CustomerID = customer.CustomerID
         };
 
@@ -103,5 +103,44 @@ public class StaffService : IStaffService
                     Type = v.Type,
                 }).ToList()
         }).ToList();
+    }
+
+    public async Task<StaffCustomerDetailsDto?> GetCustomerDetailsAsync(int customerId)
+    {
+        var customer = await _context.Customers
+            .Include(c => c.User)
+            .Include(c => c.Vehicles)
+            .Include(c => c.Appointments)
+                .ThenInclude(a => a.Vehicle)
+            .FirstOrDefaultAsync(c => c.CustomerID == customerId);
+
+        if (customer == null) return null;
+
+        return new StaffCustomerDetailsDto
+        {
+            CustomerId = customer.CustomerID,
+            UserId = customer.UserID,
+            FullName = customer.User?.FullName ?? "Unknown",
+            Email = customer.User?.Email ?? "N/A",
+            PhoneNumber = customer.User?.PhoneNumber,
+            Address = customer.User?.Address,
+            Vehicles = customer.Vehicles.Select(v => new StaffCustomerVehicleDto
+            {
+                VehicleId = v.VehicleID,
+                VehicleNo = v.VehicleNo,
+                Brand = v.Brand,
+                Model = v.Model,
+                Type = v.Type
+            }).ToList(),
+            Appointments = customer.Appointments.OrderByDescending(a => a.AppointmentDate).Select(a => new StaffAppointmentDto
+            {
+                AppointmentId = a.AppointmentID,
+                AppointmentDate = a.AppointmentDate,
+                ServiceType = a.ServiceType,
+                VehicleInfo = $"{a.Vehicle?.Brand} {a.Vehicle?.Model}".Trim(),
+                PlateNumber = a.Vehicle?.VehicleNo ?? "N/A",
+                Status = a.Status
+            }).ToList()
+        };
     }
 }

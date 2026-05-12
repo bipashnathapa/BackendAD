@@ -43,15 +43,11 @@
         </div>
 
         <nav class="dash-nav">
-            <a href="/Customer/Dashboard" class="dash-nav-item @(string.Equals(currentAction, "Dashboard", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/Customer/Dashboard" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Dashboard", StringComparison.OrdinalIgnoreCase) || string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="layout-dashboard"></i>
                 Dashboard
             </a>
-            <a href="/customer/invoices" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Invoices", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
-                <i data-lucide="receipt"></i>
-                My Invoices
-            </a>
-            <a href="/Customer/Settings" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Settings", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/Customer/Settings" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Settings", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="settings"></i>
                 Settings
             </a>
