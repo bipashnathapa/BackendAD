@@ -9,10 +9,10 @@ public class Customer
     public int CustomerID { get; set; }
 
     
-    public string UserID { get; set; }
+    public string UserID { get; set; } = default!;
     
     [ForeignKey("UserID")]
-    public ApplicationUser User { get; set; }
+    public ApplicationUser User { get; set; } = default!;
 
     
     public ICollection<VehicleInfo> Vehicles { get; set; } = new List<VehicleInfo>();
