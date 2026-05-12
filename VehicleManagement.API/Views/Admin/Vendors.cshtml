@@ -1,0 +1,84 @@
+@{ ViewData["Title"]="Vendors"; Layout="_AdminDashboardLayout"; }
+<h1 class="dash-page-title">Vendors</h1>
+<div class="data-card">
+    <div class="data-card-header"><h3>All vendors</h3>
+        <button class="btn btn-primary" onclick="openVM()"><i data-lucide="plus" style="width:14px;height:14px"></i> New Vendor</button>
+    </div>
+    <table class="data-table" id="vT"><thead><tr><th>Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Status</th><th></th></tr></thead><tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody></table>
+</div>
+<div class="modal-overlay" id="vM"><div class="modal">
+    <h3 id="vMT">New Vendor</h3>
+    <input type="hidden" id="v_id" />
+    <div class="form-row"><label>Name *</label><input id="v_name" /></div>
+    <div class="form-row"><label>Contact Person *</label><input id="v_contact" /></div>
+    <div class="form-row"><label>Phone *</label><input id="v_phone" /></div>
+    <div class="form-row"><label>Email</label><input id="v_email" type="email" /></div>
+    <div class="form-row"><label>Address</label><input id="v_address" /></div>
+    <div class="form-row"><label>PAN</label><input id="v_pan" /></div>
+    <div class="form-row" id="v_active_row" style="display:none"><label><input type="checkbox" id="v_active" /> Active</label></div>
+    <div class="form-actions"><button class="btn btn-ghost" onclick="closeVM()">Cancel</button><button class="btn btn-primary" onclick="saveV()">Save</button></div>
+</div></div>
+@section Scripts {
+<script>
+let _eid = null;
+async function loadV() {
+    const tb = document.querySelector("#vT tbody");
+    try {
+        const list = await API.fetch("/api/admin/vendors");
+        tb.innerHTML = list.length === 0
+            ? `<tr><td colspan="6" class="empty">No vendors yet.</td></tr>`
+            : list.map(v => `<tr><td><strong>${v.name}</strong></td><td>${v.contactPerson}</td><td>${v.phone}</td><td>${v.email||"—"}</td><td>${v.isActive?'<span class="badge badge-green">Active</span>':'<span class="badge badge-gray">Inactive</span>'}</td><td><button class="btn btn-ghost" onclick='editV(${JSON.stringify(v)})'><i data-lucide="edit" style="width:14px;height:14px"></i></button> <button class="btn btn-danger" onclick="delV(${v.vendorID})"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button></td></tr>`).join("");
+        lucide.createIcons();
+    } catch (e) { tb.innerHTML = `<tr><td colspan="6" class="empty">${e.message}</td></tr>`; }
+}
+function openVM() {
+    _eid = null;
+    document.getElementById("vMT").textContent = "New Vendor";
+    ["v_name","v_contact","v_phone","v_email","v_address","v_pan"].forEach(id => document.getElementById(id).value = "");
+    document.getElementById("v_active_row").style.display = "none";
+    document.getElementById("vM").classList.add("active");
+}
+function editV(v) {
+    _eid = v.vendorID;
+    document.getElementById("vMT").textContent = "Edit Vendor";
+    document.getElementById("v_name").value = v.name||"";
+    document.getElementById("v_contact").value = v.contactPerson||"";
+    document.getElementById("v_phone").value = v.phone||"";
+    document.getElementById("v_email").value = v.email||"";
+    document.getElementById("v_address").value = v.address||"";
+    document.getElementById("v_pan").value = v.panNumber||"";
+    document.getElementById("v_active").checked = v.isActive;
+    document.getElementById("v_active_row").style.display = "block";
+    document.getElementById("vM").classList.add("active");
+}
+function closeVM() { document.getElementById("vM").classList.remove("active"); }
+async function saveV() {
+    const dto = {
+        name: document.getElementById("v_name").value.trim(),
+        contactPerson: document.getElementById("v_contact").value.trim(),
+        phone: document.getElementById("v_phone").value.trim(),
+        email: document.getElementById("v_email").value.trim() || null,
+        address: document.getElementById("v_address").value.trim() || null,
+        panNumber: document.getElementById("v_pan").value.trim() || null
+    };
+    if (!dto.name || !dto.contactPerson || !dto.phone) { API.toast("Name, contact and phone required", "error"); return; }
+    try {
+        if (_eid) {
+            dto.isActive = document.getElementById("v_active").checked;
+            await API.fetch(`/api/admin/vendors/${_eid}`, { method: "PUT", body: JSON.stringify(dto) });
+            API.toast("Updated");
+        } else {
+            await API.fetch("/api/admin/vendors", { method: "POST", body: JSON.stringify(dto) });
+            API.toast("Created");
+        }
+        closeVM(); loadV();
+    } catch (e) { API.toast(e.message, "error"); }
+}
+async function delV(id) {
+    if (!confirm("Deactivate this vendor?")) return;
+    try { await API.fetch(`/api/admin/vendors/${id}`, { method: "DELETE" }); API.toast("Deactivated"); loadV(); }
+    catch (e) { API.toast(e.message, "error"); }
+}
+loadV();
+</script>
+}

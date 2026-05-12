@@ -1,0 +1,91 @@
+@{ ViewData["Title"]="New Sale"; Layout="_StaffDashboardLayout"; }
+<link rel="stylesheet" href="~/css/admin-dashboard.css" />
+<div class="admin-dashboard">
+<h1 class="dash-page-title">Create Sale Invoice</h1>
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+    <div class="data-card">
+        <div class="data-card-header"><h3>Items</h3>
+            <button class="btn btn-primary" onclick="addRow()"><i data-lucide="plus" style="width:14px;height:14px"></i> Add Part</button>
+        </div>
+        <table class="data-table" id="cT"><thead><tr><th>Part</th><th>Stock</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="data-card" style="padding:20px">
+        <h3 style="margin:0 0 16px;font-size:16px">Customer &amp; Payment</h3>
+        <div class="form-row"><label>Customer *</label><select id="cust"><option value="">— Select —</option></select></div>
+        <div class="form-row"><label>Discount %</label><input id="disc" type="number" min="0" max="100" value="0" /></div>
+        <div class="form-row"><label>Tax %</label><input id="tx" type="number" min="0" max="100" value="13" /></div>
+        <div class="form-row"><label>Amount Paid</label><input id="paid" type="number" min="0" step="0.01" value="0" /></div>
+        <div class="form-row"><label>Method</label><select id="pm"><option>Cash</option><option>eSewa</option><option>Khalti</option><option>Bank</option><option>Credit</option></select></div>
+        <div class="form-row"><label>Notes</label><textarea id="notes" rows="2"></textarea></div>
+        <div style="border-top:1px solid #e5e7eb;padding-top:14px;margin-top:14px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:#6b7280;margin-bottom:6px"><span>Subtotal</span><span id="sSub">NPR 0.00</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:#6b7280;margin-bottom:6px"><span>Discount</span><span id="sDisc">NPR 0.00</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:#6b7280;margin-bottom:6px"><span>Tax</span><span id="sTax">NPR 0.00</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:700;margin-top:10px"><span>Total</span><span id="sTot">NPR 0.00</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:#dc2626;margin-top:6px"><span>Due</span><span id="sDue">NPR 0.00</span></div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px;padding:12px" onclick="submitInv()"><i data-lucide="check" style="width:14px;height:14px"></i> Create Invoice</button>
+    </div>
+</div>
+</div>
+@section Scripts {
+<script>
+let parts = [], cart = [];
+async function loadCust() {
+    try {
+        const r = await API.fetch("/api/StaffApi/customers/search?q=");
+        document.getElementById("cust").innerHTML = '<option value="">— Select —</option>' + (r||[]).map(c=>`<option value="${c.customerId||c.CustomerId}">${c.fullName||c.FullName} — ${c.email||c.Email}</option>`).join("");
+    } catch { document.getElementById("cust").innerHTML = '<option value="">No customers loaded</option>'; }
+}
+async function loadParts() { parts = await API.fetch("/api/parts"); }
+function addRow() {
+    if (parts.length === 0) { API.toast("No parts available", "error"); return; }
+    const p = parts[0];
+    cart.push({ partID: p.partID, partName: p.partName, unitPrice: p.unitPrice, stockQuantity: p.stockQuantity, qty: 1 });
+    render();
+}
+function render() {
+    const tb = document.querySelector("#cT tbody");
+    tb.innerHTML = cart.length === 0
+        ? `<tr><td colspan="6" class="empty">Click "Add Part"</td></tr>`
+        : cart.map((r, i) => `<tr><td><select onchange="chgP(${i},this.value)">${parts.map(p=>`<option value="${p.partID}" ${p.partID===r.partID?"selected":""}>${p.partName}</option>`).join("")}</select></td><td>${r.stockQuantity}</td><td>${API.fmtNPR(r.unitPrice)}</td><td><input type="number" min="1" max="${r.stockQuantity}" value="${r.qty}" style="width:70px" onchange="chgQ(${i},this.value)" /></td><td><strong>${API.fmtNPR(r.unitPrice*r.qty)}</strong></td><td><button class="btn btn-danger" onclick="rmRow(${i})"><i data-lucide="x" style="width:14px;height:14px"></i></button></td></tr>`).join("");
+    lucide.createIcons();
+    recalc();
+}
+function chgP(i, id) { const p = parts.find(x=>x.partID===parseInt(id)); if (!p) return; cart[i] = {...cart[i], partID:p.partID, partName:p.partName, unitPrice:p.unitPrice, stockQuantity:p.stockQuantity}; if (cart[i].qty>p.stockQuantity) cart[i].qty=p.stockQuantity||1; render(); }
+function chgQ(i, q) { cart[i].qty = Math.max(1, parseInt(q||"1")); render(); }
+function rmRow(i) { cart.splice(i, 1); render(); }
+function recalc() {
+    const sub = cart.reduce((s,r)=>s+r.unitPrice*r.qty, 0);
+    const d = sub * (parseFloat(document.getElementById("disc").value||"0")/100);
+    const tb = sub - d;
+    const tx = tb * (parseFloat(document.getElementById("tx").value||"0")/100);
+    const tot = tb + tx;
+    const paid = Math.min(tot, parseFloat(document.getElementById("paid").value||"0"));
+    const due = tot - paid;
+    document.getElementById("sSub").textContent = API.fmtNPR(sub);
+    document.getElementById("sDisc").textContent = "− " + API.fmtNPR(d);
+    document.getElementById("sTax").textContent = API.fmtNPR(tx);
+    document.getElementById("sTot").textContent = API.fmtNPR(tot);
+    document.getElementById("sDue").textContent = API.fmtNPR(due);
+}
+["disc","tx","paid"].forEach(id => document.getElementById(id).addEventListener("input", recalc));
+async function submitInv() {
+    const cid = parseInt(document.getElementById("cust").value || "0");
+    if (!cid) { API.toast("Select a customer", "error"); return; }
+    if (cart.length === 0) { API.toast("Cart is empty", "error"); return; }
+    const dto = {
+        customerID: cid,
+        items: cart.map(r => ({ partID: r.partID, quantity: r.qty })),
+        discountPercent: parseFloat(document.getElementById("disc").value||"0"),
+        taxPercent: parseFloat(document.getElementById("tx").value||"13"),
+        amountPaid: parseFloat(document.getElementById("paid").value||"0"),
+        paymentMethod: document.getElementById("pm").value,
+        notes: document.getElementById("notes").value.trim() || null
+    };
+    try { const inv = await API.fetch("/api/staff/sales/invoices", { method: "POST", body: JSON.stringify(dto) }); API.toast(`Invoice ${inv.invoiceNumber} created`); setTimeout(()=>location.href=`/staff/invoice/${inv.invoiceID}`, 800); }
+    catch (e) { API.toast(e.message, "error"); }
+}
+(async () => { await Promise.all([loadCust(), loadParts()]); render(); })();
+</script>
+}

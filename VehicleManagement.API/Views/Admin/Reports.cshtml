@@ -1,0 +1,30 @@
+@{ ViewData["Title"]="Reports"; Layout="_AdminDashboardLayout"; }
+<h1 class="dash-page-title">Reports</h1>
+<div class="data-card">
+    <div class="data-card-header"><h3>Regular customers (≥3 visits / 180d)</h3></div>
+    <table class="data-table" id="rT"><thead><tr><th>Name</th><th>Email</th><th>Visits</th><th>Last visit</th></tr></thead><tbody><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table>
+</div>
+<div class="data-card">
+    <div class="data-card-header"><h3>Top 10 spenders</h3></div>
+    <table class="data-table" id="hT"><thead><tr><th>Name</th><th>Email</th><th>Total</th><th>Invoices</th></tr></thead><tbody><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table>
+</div>
+<div class="data-card">
+    <div class="data-card-header"><h3>Pending credits (>30d)</h3></div>
+    <table class="data-table" id="pT"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Due</th><th>Inv.</th><th>Days</th></tr></thead><tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody></table>
+</div>
+@section Scripts {
+<script>
+(async () => {
+    try {
+        const [r, h, p] = await Promise.all([
+            API.fetch("/api/staff/reports/regulars?minVisits=3&days=180"),
+            API.fetch("/api/staff/reports/high-spenders?top=10"),
+            API.fetch("/api/staff/reports/pending-credits?olderThanDays=30")
+        ]);
+        document.querySelector("#rT tbody").innerHTML = r.length===0?`<tr><td colspan="4" class="empty">None yet</td></tr>`:r.map(c=>`<tr><td><strong>${c.fullName}</strong></td><td>${c.email||"—"}</td><td><span class="badge badge-green">${c.visitCount}</span></td><td>${API.fmtDate(c.lastVisit)}</td></tr>`).join("");
+        document.querySelector("#hT tbody").innerHTML = h.length===0?`<tr><td colspan="4" class="empty">None yet</td></tr>`:h.map(c=>`<tr><td><strong>${c.fullName}</strong></td><td>${c.email||"—"}</td><td><strong>${API.fmtNPR(c.totalSpent)}</strong></td><td>${c.invoiceCount}</td></tr>`).join("");
+        document.querySelector("#pT tbody").innerHTML = p.length===0?`<tr><td colspan="6" class="empty">None 🎉</td></tr>`:p.map(c=>`<tr><td><strong>${c.fullName}</strong></td><td>${c.email||"—"}</td><td>${c.phone||"—"}</td><td><strong style="color:#dc2626">${API.fmtNPR(c.totalDue)}</strong></td><td>${c.overdueInvoiceCount}</td><td><span class="badge badge-amber">${c.daysOverdue}d</span></td></tr>`).join("");
+    } catch (e) { API.toast(e.message, "error"); }
+})();
+</script>
+}
