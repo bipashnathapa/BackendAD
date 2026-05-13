@@ -5,7 +5,7 @@ using Vehicle.Application.Interface.IServices;
 
 namespace VehicleManagement.Controllers;
 
-[Authorize(Roles = "Staff")]
+[Authorize(Roles = "Staff,Admin")]
 [Route("api/staff")]
 [ApiController]
 public class StaffApiController : ControllerBase
