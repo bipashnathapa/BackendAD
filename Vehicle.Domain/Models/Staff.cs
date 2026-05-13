@@ -8,8 +8,8 @@ public class Staff
     [Key]
     public int StaffID { get; set; }
 
-    public string UserID { get; set; }
+    public string UserID { get; set; } = default!;
     
     [ForeignKey("UserID")]
-    public ApplicationUser User { get; set; }
+    public ApplicationUser User { get; set; } = default!;
 }

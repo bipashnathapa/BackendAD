@@ -48,14 +48,25 @@ public class CustomerRepository : ICustomerRepository
             query = query.Where(c => c.CustomerID == customerId);
         }
         else
+        if (!string.IsNullOrWhiteSpace(search))
         {
-            var like = $"%{search}%";
-            query = query.Where(c =>
-                EF.Functions.ILike(c.User.FullName, like) ||
-                EF.Functions.ILike(c.User.Email!, like) ||
-                (c.User.PhoneNumber != null && EF.Functions.ILike(c.User.PhoneNumber, like)) ||
-                c.Vehicles.Any(v => EF.Functions.ILike(v.VehicleNo, like)));
+            search = search.Trim();
+            if (int.TryParse(search, out var customerId))
+            {
+                query = query.Where(c => c.CustomerID == customerId);
+            }
+            else
+            {
+                var like = $"%{search}%";
+                query = query.Where(c =>
+                    EF.Functions.ILike(c.User.FullName, like) ||
+                    EF.Functions.ILike(c.User.Email!, like) ||
+                    (c.User.PhoneNumber != null && EF.Functions.ILike(c.User.PhoneNumber, like)) ||
+                    c.Vehicles.Any(v => EF.Functions.ILike(v.VehicleNo, like)));
+            }
         }
+
+
 
         return await query
             .OrderByDescending(c => c.CustomerID)

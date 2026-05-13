@@ -40,6 +40,7 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IEmailOtpService, EmailOtpService>();
+builder.Services.AddScoped<ICustomerProfileService, CustomerProfileService>();
 
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
@@ -98,7 +99,7 @@ if (app.Environment.IsDevelopment())
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
 
-    // === Seed Identity roles + default admin ===
+    // Seed Identity roles + default admin (development convenience).
     var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     foreach (var r in new[] { "Admin", "Staff", "Customer" })
         if (!await roleMgr.RoleExistsAsync(r))
@@ -125,15 +126,12 @@ if (app.Environment.IsDevelopment())
         await userMgr.AddToRoleAsync(admin, "Admin");
     }
 
-    // Backfill role claims for existing users from their UserRole field
+    // Backfill Identity roles for existing users from their UserRole field.
     foreach (var u in userMgr.Users.ToList())
     {
         if (string.IsNullOrWhiteSpace(u.UserRole)) continue;
-        if (!await userMgr.IsInRoleAsync(u, u.UserRole))
-        {
-            if (await roleMgr.RoleExistsAsync(u.UserRole))
-                await userMgr.AddToRoleAsync(u, u.UserRole);
-        }
+        if (!await userMgr.IsInRoleAsync(u, u.UserRole) && await roleMgr.RoleExistsAsync(u.UserRole))
+            await userMgr.AddToRoleAsync(u, u.UserRole);
     }
 }
 

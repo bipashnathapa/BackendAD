@@ -1,9 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
+using Vehicle.Application.Interface.IServices;
 
 namespace VehicleManagement.Controllers;
 
 public class StaffController : Controller
 {
+    private readonly IStaffService _staffService;
+
+    public StaffController(IStaffService staffService)
+    {
+        _staffService = staffService;
+    }
+
     [HttpGet("/staff")]
     public IActionResult Index() => Redirect("/staff/dashboard");
 
@@ -12,9 +20,22 @@ public class StaffController : Controller
 
     [HttpGet("/staff/dashboard")]
     public IActionResult Dashboard() => View();
-    [HttpGet("/staff/new-sale")] public IActionResult NewSale() => View();
-    [HttpGet("/staff/invoice/{id:int}")] public IActionResult Invoice(int id) { ViewData["InvoiceId"] = id; return View(); }
-    [HttpGet("/staff/reports")] public IActionResult Reports() => View();
-    [HttpGet("/staff/low-stock")] public IActionResult LowStock() => View();
+
+    [HttpGet("/staff/customers")]
+    public async Task<IActionResult> Customers()
+    {
+        var customers = await _staffService.SearchCustomersAsync("");
+        return View("Customer", customers);
+    }
+
+    [HttpGet("/staff/customers/{id}")]
+    public async Task<IActionResult> Details(int id)
+    {
+        var details = await _staffService.GetCustomerDetailsAsync(id);
+        if (details == null) return NotFound();
+        return View(details);
+    }
 }
+
+
 
