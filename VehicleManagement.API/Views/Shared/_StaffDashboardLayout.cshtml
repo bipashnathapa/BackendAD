@@ -1,20 +1,4 @@
-@using Microsoft.AspNetCore.Identity
-@using Vehicle.Domain.Models
-@inject UserManager<ApplicationUser> UserManager
-@inject SignInManager<ApplicationUser> SignInManager
-
 @{
-    var currentUser = await UserManager.GetUserAsync(User);
-    
-    // For demonstration: Prefer a 'Staff' role for the Staff Dashboard context
-    if (currentUser == null)
-    {
-        currentUser = UserManager.Users.FirstOrDefault(u => u.UserRole == "Staff") 
-                      ?? UserManager.Users.FirstOrDefault();
-    }
-    
-    var fullName = currentUser?.FullName ?? "Alex Rodriguez (Demo)";
-    var userRole = currentUser?.UserRole ?? "Floor Supervisor";
 }
 
 <!doctype html>
@@ -25,22 +9,20 @@
     <title>@ViewData["Title"] • Staff Portal</title>
     <link rel="stylesheet" href="~/css/dashboard.css" />
     <link rel="stylesheet" href="~/css/staff-dashboard.css" />
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="dashboard-layout staff-dashboard">
-    <!-- Sidebar -->
     <aside class="dash-sidebar dark-sidebar">
         <div class="dash-brand">
             <div class="brand-icon-box">
                 <i data-lucide="wrench"></i>
             </div>
             <div class="brand-text">
-                <span class="brand-title">AutoParts Pro</span>
-                <span class="brand-subtitle">WAREHOUSE ADMIN</span>
+                <span class="brand-title">VehicleMgmt</span>
+                <span class="brand-subtitle">STAFF PORTAL</span>
             </div>
         </div>
-        
+
         <div class="sidebar-action">
             <a href="/staff/new-sale" class="btn-orange-full" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none">
                 <i data-lucide="plus" style="width:16px;height:16px"></i>
@@ -49,27 +31,27 @@
         </div>
 
         <nav class="dash-nav dark-nav">
-            <a href="/staff/dashboard" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/staff/dashboard" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="layout-dashboard"></i>
                 Dashboard
             </a>
-            <a href="/staff/new-sale" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "NewSale", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/staff/new-sale" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "NewSale", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="package"></i>
                 New Sale
             </a>
-            <a href="/staff" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/staff" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="users"></i>
                 Customers
             </a>
-            <a href="/staff/service-requests" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "ServiceRequests", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/staff/service-requests" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "ServiceRequests", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="clipboard-list"></i>
                 Service Requests
             </a>
-            <a href="/staff/low-stock" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "LowStock", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/staff/low-stock" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "LowStock", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="layers"></i>
                 Inventory
             </a>
-            <a href="/staff/reports" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Reports", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/staff/reports" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Reports", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="bar-chart-2"></i>
                 Reports
             </a>
@@ -83,46 +65,42 @@
         </div>
     </aside>
 
-    <!-- Main Content Area -->
     <div class="dash-main">
-        <!-- Header -->
         <header class="dash-header light-header">
-            <div class="dash-search expand-search">
-                <i data-lucide="search" style="color:var(--dash-muted);width:16px;"></i>
-                <input type="text" placeholder="Find customers by vehicle #, phone, ID, or name..." />
-            </div>
-            
             <div class="dash-header-actions">
-                <button class="dash-icon-btn" aria-label="Notifications">
-                    <i data-lucide="bell"></i>
-                </button>
-                <button class="dash-icon-btn" aria-label="Help">
-                    <i data-lucide="help-circle"></i>
-                </button>
-                
                 <div class="user-profile">
                     <div class="user-text">
-                        <span class="user-name">@fullName</span>
-                        <span class="user-role">@(userRole.ToUpper())</span>
+                        <span class="user-name" id="staffUserName">User</span>
+                        <span class="user-role" id="staffUserRole">STAFF</span>
                     </div>
-                    <img src="https://ui-avatars.com/api/?name=@(fullName.Replace(" ", "+"))&background=0D8ABC&color=fff&rounded=true" alt="User Avatar" />
+                    <img id="staffAvatar" src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff&rounded=true" alt="User Avatar" />
                 </div>
             </div>
         </header>
 
-        <!-- Dynamic Content -->
         <main class="dash-content bg-gray">
             @RenderBody()
         </main>
     </div>
 
-    <!-- Initialize Lucide Icons -->
     <script src="~/js/site.js"></script>
     <script src="~/js/api-client.js"></script>
     <script>
         lucide.createIcons();
 
         document.addEventListener("DOMContentLoaded", () => {
+            const displayName = (window.VM?.getUserDisplayName?.() || "").trim() || "User";
+            const role = (window.VM?.getUserRole?.() || "").trim() || "Staff";
+            const userNameEl = document.getElementById("staffUserName");
+            const userRoleEl = document.getElementById("staffUserRole");
+            const avatarEl = document.getElementById("staffAvatar");
+
+            if (userNameEl) userNameEl.textContent = displayName;
+            if (userRoleEl) userRoleEl.textContent = role.toUpperCase();
+            if (avatarEl) {
+                avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=0D8ABC&color=fff&rounded=true`;
+            }
+
             const btn = document.getElementById("staffLogoutBtn");
             if (!btn) return;
             btn.addEventListener("click", () => {

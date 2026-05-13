@@ -1,0 +1,147 @@
+@model IReadOnlyList<Vehicle.Application.DTOs.StaffCustomerSearchResultDto>
+@{
+    ViewData["Title"] = "Customer Directory";
+    Layout = "_StaffDashboardLayout";
+
+    int totalCustomers = Model?.Count ?? 0;
+}
+
+<div class="customer-directory-container">
+    <div class="staff-header-actions">
+        <div>
+            <h1 style="font-size: 24px; font-weight: 800; margin: 0 0 4px; color: #111827;">Customer Directory</h1>
+            <p class="sys-healthy">Manage client records, vehicle history, and billing status.</p>
+        </div>
+        <div class="header-btns">
+            <a href="/staff/register" class="btn-orange" style="padding: 10px 20px; font-size: 14px; text-decoration: none;">
+                <i data-lucide="user-plus" style="width:18px;"></i>
+                Register New Customer
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid-3">
+        <!-- Top Spenders -->
+        <div class="dash-card stat-card-flex">
+            <div class="stat-main">
+                <span class="stat-label">TOP SPENDERS (MTD)</span>
+                <div class="spender-row">
+                    <span class="spender-name">N/A</span>
+                    <span class="spender-val">N/A</span>
+                </div>
+                <div class="spender-row" style="margin: 0;">
+                    <span class="spender-name">N/A</span>
+                    <span class="spender-val">N/A</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Credits -->
+        <div class="dash-card stat-card-flex">
+            <div class="stat-main">
+                <span class="stat-label">PENDING CREDITS</span>
+                <h2 class="stat-val-large">N/A</h2>
+                <p class="stat-sub txt-red" style="font-weight: 600;">N/A</p>
+            </div>
+        </div>
+
+        <!-- Regulars Count -->
+        <div class="dash-card stat-card-flex">
+            <div class="stat-main">
+                <span class="stat-label">TOTAL CUSTOMERS</span>
+                <h2 class="stat-val-large">@totalCustomers</h2>
+                <p class="stat-sub">Registered in system</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="filters-bar dash-card">
+        <div class="filter-group">
+            <label>Status:</label>
+            <select><option>All Active</option></select>
+        </div>
+        <div class="filter-group">
+            <label>Vehicle:</label>
+            <select><option>All Types</option></select>
+        </div>
+        <div class="filter-group">
+            <label>Tier:</label>
+            <select><option>All Tiers</option></select>
+        </div>
+        <button class="clear-filters">Clear Filters</button>
+    </div>
+
+    <!-- Main Table -->
+    <div class="dash-card">
+        <table class="directory-table">
+            <thead>
+                <tr>
+                    <th>CUSTOMER & ID</th>
+                    <th>VEHICLE DETAILS</th>
+                    <th>LAST VISIT</th>
+                    <th>TOTAL SPEND</th>
+                    <th>STATUS</th>
+                    <th style="text-align: right;">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var customer in Model)
+                    {
+                        var firstVehicle = customer.Vehicles?.FirstOrDefault();
+                        var vehicleText = firstVehicle != null ? $"{firstVehicle.Brand} {firstVehicle.Model}".Trim() : "No Vehicle";
+                        var plateText = firstVehicle != null ? firstVehicle.VehicleNo : "N/A";
+
+                        <tr>
+                            <td>
+                                <div class="cust-info">
+                                    <strong>@customer.FullName</strong>
+                                    <span>ID: @customer.CustomerId</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="vehicle-info">
+                                    <strong>@vehicleText</strong>
+                                    <span>Plate: @plateText</span>
+                                </div>
+                            </td>
+                            <td class="txt-muted">N/A</td>
+                            <td>
+                                <div class="spend-info">
+                                    <strong class="txt-muted">N/A</strong>
+                                </div>
+                            </td>
+                            <td><span class="badge-green">ACTIVE</span></td>
+                            <td>
+                                <div class="table-actions" style="justify-content: flex-end;">
+                                    <a href="/staff/customers/@customer.CustomerId" style="color: inherit; text-decoration: none;">
+                                        View details
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--staff-muted);">
+                            No customers found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Table Footer -->
+        @if (totalCustomers > 0)
+        {
+            <div class="table-footer">
+                <span class="results-count">Showing 1-@totalCustomers of @totalCustomers customers</span>
+            </div>
+        }
+    </div>
+</div>

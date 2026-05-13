@@ -21,6 +21,7 @@
         </div>
         <nav class="dash-nav dark-nav">
             <a href="/admin/dashboard" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")"><i data-lucide="layout-dashboard"></i> Overview</a>
+            <a href="/admin/staff"     class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Staff",     StringComparison.OrdinalIgnoreCase) ? "active" : "")"><i data-lucide="users"></i> Staff</a>
             <a href="/admin/vendors"   class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Vendors",   StringComparison.OrdinalIgnoreCase) ? "active" : "")"><i data-lucide="truck"></i> Vendors</a>
             <a href="/admin/parts"     class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Parts",     StringComparison.OrdinalIgnoreCase) ? "active" : "")"><i data-lucide="package"></i> Parts</a>
             <a href="/admin/low-stock" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "LowStock",  StringComparison.OrdinalIgnoreCase) ? "active" : "")"><i data-lucide="alert-triangle"></i> Low Stock</a>
@@ -32,12 +33,7 @@
     </aside>
     <div class="dash-main">
         <header class="dash-header light-header">
-            <div class="dash-search expand-search">
-                <i data-lucide="search" style="color:var(--dash-muted);width:16px;"></i>
-                <input type="text" placeholder="Search..." />
-            </div>
             <div class="dash-header-actions">
-                <button class="dash-icon-btn"><i data-lucide="bell"></i></button>
                 <div class="user-profile">
                     <div class="user-text">
                         <span class="user-name" id="adminUserName">Admin</span>

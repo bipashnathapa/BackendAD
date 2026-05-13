@@ -27,12 +27,9 @@
             </div>
         </div>
         <div class="field">
-            <label for="userRole">Account type</label>
+            <label>Account type</label>
             <div class="control">
-                <select id="userRole" required style="padding-left:12px">
-                    <option value="Customer">Customer</option>
-                    <option value="Staff">Staff</option>
-                </select>
+                <input type="text" value="Customer" disabled style="padding-left:12px" />
             </div>
         </div>
         <div class="field">
@@ -62,8 +59,8 @@
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value;
             const address = document.getElementById("address").value.trim();
-            const userRole = document.getElementById("userRole").value;
-            if (!fullName || !email || !password || !address || !userRole) return;
+            const userRole = "Customer";
+            if (!fullName || !email || !password || !address) return;
 
             try {
                 const data = await window.VM.apiJson("/api/Auth/register", {

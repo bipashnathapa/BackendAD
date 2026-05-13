@@ -1,0 +1,67 @@
+@{ ViewData["Title"]="Staff"; Layout="_AdminDashboardLayout"; }
+<h1 class="dash-page-title">Staff Management</h1>
+
+<div class="data-card">
+    <div class="data-card-header">
+        <h3>Register new staff account</h3>
+    </div>
+
+    <div class="form-row">
+        <label>Full name *</label>
+        <input id="staff_fullName" type="text" placeholder="e.g., Rama Thapa" />
+    </div>
+    <div class="form-row">
+        <label>Email *</label>
+        <input id="staff_email" type="email" placeholder="staff@vms.local" />
+    </div>
+    <div class="form-row">
+        <label>Password *</label>
+        <input id="staff_password" type="password" placeholder="Minimum 6 characters" />
+    </div>
+    <div class="form-row">
+        <label>Address *</label>
+        <input id="staff_address" type="text" placeholder="City / Street" />
+    </div>
+
+    <div class="form-actions">
+        <button class="btn btn-ghost" type="button" onclick="clearStaffForm()">Clear</button>
+        <button class="btn btn-primary" type="button" onclick="registerStaff()">Register Staff</button>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function clearStaffForm() {
+        document.getElementById("staff_fullName").value = "";
+        document.getElementById("staff_email").value = "";
+        document.getElementById("staff_password").value = "";
+        document.getElementById("staff_address").value = "";
+    }
+
+    async function registerStaff() {
+        const dto = {
+            fullName: document.getElementById("staff_fullName").value.trim(),
+            email: document.getElementById("staff_email").value.trim(),
+            password: document.getElementById("staff_password").value,
+            address: document.getElementById("staff_address").value.trim(),
+            userRole: "Staff"
+        };
+
+        if (!dto.fullName || !dto.email || !dto.password || !dto.address) {
+            API.toast("Please fill all required fields", "error");
+            return;
+        }
+
+        try {
+            await API.fetch("/api/admin/staff", {
+                method: "POST",
+                body: JSON.stringify(dto)
+            });
+            API.toast("Staff registered");
+            clearStaffForm();
+        } catch (e) {
+            API.toast(e.message, "error");
+        }
+    }
+</script>
+}

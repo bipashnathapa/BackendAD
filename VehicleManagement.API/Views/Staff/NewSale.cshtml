@@ -114,7 +114,17 @@ async function submitInv() {
         paymentMethod: document.getElementById("pm").value,
         notes: document.getElementById("notes").value.trim() || null
     };
-    try { const inv = await API.fetch("/api/staff/sales/invoices", { method: "POST", body: JSON.stringify(dto) }); API.toast(`Invoice ${inv.invoiceNumber} created`); setTimeout(()=>location.href=`/staff/invoice/${inv.invoiceID}`, 800); }
+    try {
+        const inv = await API.fetch("/api/staff/sales/invoices", { method: "POST", body: JSON.stringify(dto) });
+        const emailText = inv.invoiceEmailSent
+            ? `created and emailed to ${inv.customerEmail || "the customer"}`
+            : inv.customerEmail
+                ? "created, but email was not sent. Check SMTP settings."
+                : "created, but the customer has no email address on file.";
+        const stockText = inv.lowStockAlertSent ? " Low-stock alert sent." : "";
+        API.toast(`Invoice ${inv.invoiceNumber} ${emailText}.${stockText}`);
+        setTimeout(()=>location.href=`/staff/invoice/${inv.invoiceID}`, 1200);
+    }
     catch (e) { API.toast(e.message, "error"); }
 }
 

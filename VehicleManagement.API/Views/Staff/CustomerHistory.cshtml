@@ -1,0 +1,120 @@
+@{
+    ViewData["Title"] = "Customer History";
+    Layout = "_StaffDashboardLayout";
+    var customerId = (int)(ViewData["CustomerId"] ?? 0);
+}
+
+<div class="staff-header-actions">
+    <p class="sys-healthy">Customer history and purchases.</p>
+    <div class="header-btns">
+        <a href="/staff" class="btn-outline-dark" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px">
+            <i data-lucide="arrow-left" style="width:16px;"></i>
+            Back
+        </a>
+    </div>
+</div>
+
+<div class="staff-main-grid">
+    <div class="staff-left-col">
+        <div class="dash-card">
+            <div class="card-hd-title">
+                <h3>Customer</h3>
+            </div>
+            <div id="custMeta" class="txt-muted">Loading…</div>
+        </div>
+
+        <div class="dash-card" style="margin-top:18px">
+            <div class="card-hd-flex">
+                <h3>Vehicles</h3>
+            </div>
+            <table class="staff-table">
+                <thead>
+                <tr>
+                    <th>Vehicle No</th>
+                    <th>Brand</th>
+                    <th>Model</th>
+                    <th>Type</th>
+                </tr>
+                </thead>
+                <tbody id="vehBody">
+                <tr><td colspan="4" class="empty">Loading…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="staff-right-col">
+        <div class="dash-card">
+            <div class="card-hd-flex">
+                <h3>Purchase History</h3>
+            </div>
+            <table class="staff-table">
+                <thead>
+                <tr>
+                    <th>Invoice</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody id="invBody">
+                <tr><td colspan="4" class="empty">Loading…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const customerId = @customerId;
+    const esc = (v) => String(v ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#039;");
+
+    async function loadHistory() {
+        try {
+            const data = await API.fetch(`/api/staff/customers/${customerId}`);
+            document.getElementById("custMeta").innerHTML = `
+                <div><strong>${esc(data.fullName || "Unknown")}</strong></div>
+                <div>${esc(data.email || "N/A")}</div>
+                <div>${esc(data.phoneNumber || "")}</div>
+                <div>${esc(data.address || "")}</div>
+            `;
+
+            const vehBody = document.getElementById("vehBody");
+            vehBody.innerHTML = (data.vehicles || []).length === 0
+                ? `<tr><td colspan="4" class="empty">No vehicles</td></tr>`
+                : (data.vehicles || []).map(v => `
+                    <tr>
+                        <td>${esc(v.vehicleNo)}</td>
+                        <td>${esc(v.brand)}</td>
+                        <td>${esc(v.model || "")}</td>
+                        <td>${esc(v.type || "")}</td>
+                    </tr>
+                `).join("");
+
+            const invBody = document.getElementById("invBody");
+            invBody.innerHTML = (data.invoices || []).length === 0
+                ? `<tr><td colspan="4" class="empty">No invoices</td></tr>`
+                : (data.invoices || []).map(i => `
+                    <tr>
+                        <td><a href="/staff/invoice/${i.invoiceId}" style="text-decoration:none;font-weight:700">${esc(i.invoiceNumber)}</a></td>
+                        <td>${esc(new Date(i.invoiceDate).toLocaleDateString())}</td>
+                        <td>${esc((i.totalAmount ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</td>
+                        <td>${esc(i.paymentStatus || "")}</td>
+                    </tr>
+                `).join("");
+        } catch (err) {
+            document.getElementById("custMeta").textContent = err.message || "Failed to load";
+            document.getElementById("vehBody").innerHTML = `<tr><td colspan="4" class="empty">${esc(err.message || "Failed to load")}</td></tr>`;
+            document.getElementById("invBody").innerHTML = `<tr><td colspan="4" class="empty">${esc(err.message || "Failed to load")}</td></tr>`;
+        }
+    }
+
+    loadHistory();
+</script>
+}

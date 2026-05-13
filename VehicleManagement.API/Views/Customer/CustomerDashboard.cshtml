@@ -92,6 +92,41 @@
     <div class="dash-side-col">
         <div class="dash-card">
             <div class="dash-card-header">
+                <h3>Loyalty Discount</h3>
+                <p>Get 10% off when a single purchase is more than 5000.</p>
+            </div>
+            <div class="dash-card-body">
+                <form id="loyaltyForm" class="dash-form">
+                    <div class="dash-field">
+                        <label for="purchaseAmount">Purchase amount</label>
+                        <input id="purchaseAmount" type="number" min="0.01" step="0.01" required placeholder="e.g., 6500" />
+                    </div>
+                    <div class="dash-actions">
+                        <button class="dash-btn-primary" type="submit">Calculate Discount</button>
+                    </div>
+                </form>
+
+                <div style="height:14px"></div>
+
+                <div class="dash-table-wrap">
+                    <table class="dash-table" id="loyaltyResultTable" style="display:none">
+                        <thead>
+                        <tr>
+                            <th>Discount</th>
+                            <th>Final</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody id="loyaltyResultTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div style="height:18px"></div>
+
+        <div class="dash-card">
+            <div class="dash-card-header">
                 <h3>Unavailable Part Request</h3>
                 <p>Request a part that isn’t listed.</p>
             </div>
@@ -222,6 +257,13 @@
             }
         }
 
+        function formatMoney(value) {
+            return Number(value || 0).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+        }
+
         function populateVehicleSelects(vehicles) {
             const apptSel = el("apptVehicleId");
             const partSel = el("partVehicleId");
@@ -314,6 +356,17 @@
             `).join("");
         }
 
+        function renderLoyaltyResult(result) {
+            el("loyaltyResultTable").style.display = "";
+            el("loyaltyResultTbody").innerHTML = `
+                <tr>
+                    <td>${formatMoney(result.discountAmount)} (${escapeHtml(result.discountPercentage)}%)</td>
+                    <td>${formatMoney(result.finalAmount)}</td>
+                    <td><span class="dash-badge">${result.discountApplied ? "Applied" : "Not applied"}</span></td>
+                </tr>
+            `;
+        }
+
         async function loadAll() {
             const [vehicles, appointments, parts, reviews] = await Promise.all([
                 window.VM.apiJson("/api/customer/vehicles"),
@@ -338,6 +391,27 @@
             } catch (err) {
                 window.VM.showToast("bad", err.message || "Failed to load dashboard data");
             }
+
+            el("loyaltyForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const purchaseAmount = Number(el("purchaseAmount").value);
+
+                if (!Number.isFinite(purchaseAmount) || purchaseAmount <= 0) {
+                    window.VM.showToast("bad", "Enter a valid purchase amount");
+                    return;
+                }
+
+                try {
+                    const result = await window.VM.apiJson("/api/customer/loyalty/calculate", {
+                        method: "POST",
+                        body: JSON.stringify({ purchaseAmount }),
+                    });
+                    renderLoyaltyResult(result);
+                    window.VM.showToast("ok", result.message || "Discount calculated");
+                } catch (err) {
+                    window.VM.showToast("bad", err.message || "Unable to calculate discount");
+                }
+            });
 
             el("bookAppointmentForm").addEventListener("submit", async (e) => {
                 e.preventDefault();

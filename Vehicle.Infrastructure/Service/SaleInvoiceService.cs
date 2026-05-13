@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System.Net;
 using Vehicle.Application.DTOs;
 using Vehicle.Application.Interface.IServices;
 using Vehicle.Domain.Models;
@@ -10,12 +13,20 @@ namespace Vehicle.Infrastructure.Service;
 public class SaleInvoiceService : ISaleInvoiceService
 {
     private readonly ApplicationDbContext _db;
-    private readonly IEmailService _email;
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<SaleInvoiceService> _logger;
 
-    public SaleInvoiceService(ApplicationDbContext db, IEmailService email)
+    public SaleInvoiceService(
+        ApplicationDbContext db,
+        IEmailService emailService,
+        IConfiguration configuration,
+        ILogger<SaleInvoiceService> logger)
     {
         _db = db;
-        _email = email;
+        _emailService = emailService;
+        _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task<SaleInvoiceDTO?> CreateAsync(string staffUserId, CreateSaleInvoiceDTO dto)
@@ -26,7 +37,6 @@ public class SaleInvoiceService : ISaleInvoiceService
         var customer = await _db.Customers.Include(c => c.User).FirstOrDefaultAsync(c => c.CustomerID == dto.CustomerID);
         if (customer == null) return null;
 
-        // Lock parts and validate stock atomically
         await using IDbContextTransaction tx = await _db.Database.BeginTransactionAsync();
         try
         {
@@ -35,6 +45,7 @@ public class SaleInvoiceService : ISaleInvoiceService
             if (parts.Count != partIds.Count) return null;
 
             var items = new List<SaleInvoiceItem>();
+            var lowStockParts = new List<Part>();
             decimal subTotal = 0m;
 
             foreach (var line in dto.Items)
@@ -55,14 +66,13 @@ public class SaleInvoiceService : ISaleInvoiceService
                 });
 
                 part.StockQuantity -= line.Quantity;
+                if (part.StockQuantity <= part.LowStockThreshold)
+                {
+                    lowStockParts.Add(part);
+                }
             }
 
-            // Auto-discount rule: if subtotal > 5000, apply at least 10% discount.
-            // This keeps the UI simple (staff doesn't need to calculate it).
-            var discountPercent = dto.DiscountPercent;
-            if (subTotal > 5000m && discountPercent < 10m) discountPercent = 10m;
-
-            var discount = Math.Round(subTotal * discountPercent / 100m, 2);
+            var discount = Math.Round(subTotal * dto.DiscountPercent / 100m, 2);
             var taxBase = subTotal - discount;
             var tax = Math.Round(taxBase * dto.TaxPercent / 100m, 2);
             var total = Math.Round(taxBase + tax, 2);
@@ -93,76 +103,10 @@ public class SaleInvoiceService : ISaleInvoiceService
             await _db.SaveChangesAsync();
             await tx.CommitAsync();
 
-            var dtoOut = new SaleInvoiceDTO
-            {
-                InvoiceID = invoice.InvoiceID,
-                InvoiceNumber = invoice.InvoiceNumber,
-                CustomerID = customer.CustomerID,
-                CustomerName = customer.User.FullName,
-                StaffName = staff.User.FullName,
-                SubTotal = invoice.SubTotal,
-                Discount = invoice.Discount,
-                Tax = invoice.Tax,
-                TotalAmount = invoice.TotalAmount,
-                AmountPaid = invoice.AmountPaid,
-                AmountDue = invoice.AmountDue,
-                PaymentStatus = invoice.PaymentStatus,
-                PaymentMethod = invoice.PaymentMethod,
-                InvoiceDate = invoice.InvoiceDate,
-                Items = invoice.Items.Select(it => new SaleInvoiceItemDTO
-                {
-                    PartID = it.PartID,
-                    PartName = it.PartNameSnapshot,
-                    Quantity = it.Quantity,
-                    UnitPrice = it.UnitPrice,
-                    LineTotal = it.LineTotal
-                }).ToList()
-            };
+            var invoiceEmailSent = await TrySendInvoiceEmailAsync(invoice, customer, staff);
+            var lowStockAlertSent = await TrySendLowStockAlertAsync(lowStockParts);
 
-            // Email the invoice to the customer (in dev this will log to console unless SMTP is configured).
-            var to = customer.User.Email;
-            if (!string.IsNullOrWhiteSpace(to))
-            {
-                var subject = $"Your invoice {invoice.InvoiceNumber}";
-                var body = $@"
-<div style=""font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.45"">
-  <h2 style=""margin:0 0 8px"">Invoice {invoice.InvoiceNumber}</h2>
-  <div style=""color:#6b7280;margin:0 0 14px"">Date: {invoice.InvoiceDate:yyyy-MM-dd HH:mm} (UTC)</div>
-  <div style=""border:1px solid #e5e7eb;border-radius:10px;padding:14px"">
-    <div><strong>Subtotal:</strong> {invoice.SubTotal:N2}</div>
-    <div><strong>Discount:</strong> −{invoice.Discount:N2}</div>
-    <div><strong>Tax:</strong> {invoice.Tax:N2}</div>
-    <div style=""margin-top:8px;font-size:16px""><strong>Total:</strong> {invoice.TotalAmount:N2}</div>
-    <div style=""margin-top:2px;color:#6b7280"">Paid: {invoice.AmountPaid:N2} • Due: {invoice.AmountDue:N2}</div>
-  </div>
-  <h3 style=""margin:18px 0 8px"">Items</h3>
-  <table cellpadding=""0"" cellspacing=""0"" style=""width:100%;border-collapse:collapse"">
-    <thead>
-      <tr>
-        <th align=""left"" style=""border-bottom:1px solid #e5e7eb;padding:8px 0"">Part</th>
-        <th align=""right"" style=""border-bottom:1px solid #e5e7eb;padding:8px 0"">Qty</th>
-        <th align=""right"" style=""border-bottom:1px solid #e5e7eb;padding:8px 0"">Price</th>
-        <th align=""right"" style=""border-bottom:1px solid #e5e7eb;padding:8px 0"">Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      {string.Join("", invoice.Items.Select(it => $@"
-      <tr>
-        <td style=""border-bottom:1px solid #f3f4f6;padding:8px 0"">{System.Net.WebUtility.HtmlEncode(it.PartNameSnapshot)}</td>
-        <td align=""right"" style=""border-bottom:1px solid #f3f4f6;padding:8px 0"">{it.Quantity}</td>
-        <td align=""right"" style=""border-bottom:1px solid #f3f4f6;padding:8px 0"">{it.UnitPrice:N2}</td>
-        <td align=""right"" style=""border-bottom:1px solid #f3f4f6;padding:8px 0"">{it.LineTotal:N2}</td>
-      </tr>
-      "))}
-    </tbody>
-  </table>
-  <div style=""color:#6b7280;margin-top:14px"">Thank you.</div>
-</div>";
-
-                await _email.SendAsync(to, subject, body);
-            }
-
-            return dtoOut;
+            return Map(invoice, customer, staff, invoiceEmailSent, lowStockAlertSent);
         }
         catch
         {
@@ -181,23 +125,160 @@ public class SaleInvoiceService : ISaleInvoiceService
 
         if (inv == null) return null;
 
+        return Map(inv, inv.Customer, inv.Staff, false, false);
+    }
+
+    private async Task<bool> TrySendInvoiceEmailAsync(SaleInvoice invoice, Customer customer, Staff staff)
+    {
+        var to = customer.User.Email;
+        if (string.IsNullOrWhiteSpace(to))
+        {
+            _logger.LogWarning(
+                "Invoice {InvoiceNumber} was created for customer {CustomerId}, but no email address is on file.",
+                invoice.InvoiceNumber,
+                customer.CustomerID);
+            return false;
+        }
+
+        var sent = await _emailService.SendAsync(
+            to,
+            $"Invoice {invoice.InvoiceNumber}",
+            BuildInvoiceEmail(invoice, customer, staff));
+
+        if (!sent)
+        {
+            _logger.LogWarning(
+                "Invoice {InvoiceNumber} was created for {Email}, but the email was not delivered.",
+                invoice.InvoiceNumber,
+                to);
+        }
+
+        return sent;
+    }
+
+    private async Task<bool> TrySendLowStockAlertAsync(IReadOnlyCollection<Part> parts)
+    {
+        var lowStockParts = parts
+            .Where(p => p.StockQuantity <= p.LowStockThreshold)
+            .GroupBy(p => p.PartID)
+            .Select(g => g.First())
+            .ToList();
+
+        if (lowStockParts.Count == 0) return false;
+
+        var configuredRecipients = (_configuration["Inventory:LowStockAlertEmails"] ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var userRecipients = await _db.Users
+            .Where(u => (u.UserRole == "Staff" || u.UserRole == "Admin") && u.Email != null)
+            .Select(u => u.Email!)
+            .ToListAsync();
+
+        var recipients = configuredRecipients
+            .Concat(userRecipients)
+            .Where(e => !string.IsNullOrWhiteSpace(e))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (recipients.Count == 0) return false;
+
+        var rows = string.Join("", lowStockParts.Select(p =>
+            $"<tr><td>{WebUtility.HtmlEncode(p.PartName)}</td><td>{WebUtility.HtmlEncode(p.PartCode ?? "-")}</td><td>{p.StockQuantity}</td><td>{p.LowStockThreshold}</td></tr>"));
+
+        var html = $"""
+            <h3>Low stock alert</h3>
+            <p>The following items are at or below their configured low-stock threshold.</p>
+            <table border="1" cellpadding="6" cellspacing="0">
+                <tr><th>Part</th><th>Code</th><th>Stock</th><th>Threshold</th></tr>
+                {rows}
+            </table>
+            """;
+
+        try
+        {
+            var sent = false;
+            foreach (var recipient in recipients)
+            {
+                if (await _emailService.SendAsync(recipient, "[VMS] Low stock alert", html))
+                {
+                    sent = true;
+                }
+            }
+
+            return sent;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string BuildInvoiceEmail(SaleInvoice invoice, Customer customer, Staff staff)
+    {
+        var rows = string.Join("", invoice.Items.Select(i =>
+            $"""
+            <tr>
+                <td>{WebUtility.HtmlEncode(i.PartNameSnapshot)}</td>
+                <td style="text-align:right">{i.Quantity}</td>
+                <td style="text-align:right">NPR {i.UnitPrice:N2}</td>
+                <td style="text-align:right">NPR {i.LineTotal:N2}</td>
+            </tr>
+            """));
+
+        var notes = string.IsNullOrWhiteSpace(invoice.Notes)
+            ? string.Empty
+            : $"<p><strong>Notes:</strong> {WebUtility.HtmlEncode(invoice.Notes)}</p>";
+
+        return $"""
+            <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
+                <h2>Invoice {WebUtility.HtmlEncode(invoice.InvoiceNumber)}</h2>
+                <p>Hello {WebUtility.HtmlEncode(customer.User.FullName)},</p>
+                <p>Your invoice has been prepared by {WebUtility.HtmlEncode(staff.User.FullName)}.</p>
+                <table style="border-collapse:collapse;width:100%" cellpadding="8">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;border-bottom:2px solid #111827">Part</th>
+                            <th style="text-align:right;border-bottom:2px solid #111827">Qty</th>
+                            <th style="text-align:right;border-bottom:2px solid #111827">Unit</th>
+                            <th style="text-align:right;border-bottom:2px solid #111827">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>{rows}</tbody>
+                </table>
+                <p><strong>Subtotal:</strong> NPR {invoice.SubTotal:N2}</p>
+                <p><strong>Discount:</strong> NPR {invoice.Discount:N2}</p>
+                <p><strong>Tax:</strong> NPR {invoice.Tax:N2}</p>
+                <p><strong>Total:</strong> NPR {invoice.TotalAmount:N2}</p>
+                <p><strong>Paid:</strong> NPR {invoice.AmountPaid:N2}</p>
+                <p><strong>Due:</strong> NPR {invoice.AmountDue:N2}</p>
+                {notes}
+                <p>Thank you.</p>
+            </div>
+            """;
+    }
+
+    private static SaleInvoiceDTO Map(SaleInvoice invoice, Customer customer, Staff staff, bool invoiceEmailSent, bool lowStockAlertSent)
+    {
         return new SaleInvoiceDTO
         {
-            InvoiceID = inv.InvoiceID,
-            InvoiceNumber = inv.InvoiceNumber,
-            CustomerID = inv.CustomerID,
-            CustomerName = inv.Customer.User.FullName,
-            StaffName = inv.Staff.User.FullName,
-            SubTotal = inv.SubTotal,
-            Discount = inv.Discount,
-            Tax = inv.Tax,
-            TotalAmount = inv.TotalAmount,
-            AmountPaid = inv.AmountPaid,
-            AmountDue = inv.AmountDue,
-            PaymentStatus = inv.PaymentStatus,
-            PaymentMethod = inv.PaymentMethod,
-            InvoiceDate = inv.InvoiceDate,
-            Items = inv.Items.Select(it => new SaleInvoiceItemDTO
+            InvoiceID = invoice.InvoiceID,
+            InvoiceNumber = invoice.InvoiceNumber,
+            CustomerID = invoice.CustomerID,
+            CustomerName = customer.User.FullName,
+            CustomerEmail = customer.User.Email,
+            StaffName = staff.User.FullName,
+            SubTotal = invoice.SubTotal,
+            Discount = invoice.Discount,
+            Tax = invoice.Tax,
+            TotalAmount = invoice.TotalAmount,
+            AmountPaid = invoice.AmountPaid,
+            AmountDue = invoice.AmountDue,
+            PaymentStatus = invoice.PaymentStatus,
+            PaymentMethod = invoice.PaymentMethod,
+            InvoiceDate = invoice.InvoiceDate,
+            InvoiceEmailSent = invoiceEmailSent,
+            LowStockAlertSent = lowStockAlertSent,
+            Items = invoice.Items.Select(it => new SaleInvoiceItemDTO
             {
                 PartID = it.PartID,
                 PartName = it.PartNameSnapshot,

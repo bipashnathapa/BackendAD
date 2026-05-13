@@ -1,52 +1,73 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Net.Mail;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Vehicle.Application.Interface.IServices;
 
 namespace Vehicle.Infrastructure.Service;
 
-// Sends mail via SMTP if configured; otherwise logs the message.
-// Configure under "Smtp": { "Host", "Port", "User", "Pass", "From", "Enabled": true }
 public class EmailService : IEmailService
 {
-    private readonly IConfiguration _cfg;
+    private readonly SmtpOptions _options;
     private readonly ILogger<EmailService> _log;
 
-    public EmailService(IConfiguration cfg, ILogger<EmailService> log)
+    public EmailService(IOptions<SmtpOptions> options, ILogger<EmailService> log)
     {
-        _cfg = cfg;
+        _options = options.Value;
         _log = log;
     }
 
-    public async Task SendAsync(string to, string subject, string body)
+    public async Task<bool> SendAsync(string to, string subject, string body)
     {
-        var enabled = _cfg.GetValue<bool>("Smtp:Enabled");
-        if (!enabled || string.IsNullOrWhiteSpace(_cfg["Smtp:Host"]))
+        if (string.IsNullOrWhiteSpace(to))
         {
-            _log.LogInformation("[EmailService:DEV] To={To} Subject={Subject}\n{Body}", to, subject, body);
-            return;
+            _log.LogWarning("Email skipped because recipient address is empty.");
+            return false;
         }
 
-        var host = _cfg["Smtp:Host"]!;
-        var port = _cfg.GetValue<int>("Smtp:Port", 587);
-        var user = _cfg["Smtp:User"];
-        var pass = _cfg["Smtp:Pass"];
-        var from = _cfg["Smtp:From"] ?? user ?? "no-reply@localhost";
+        if (!_options.Enabled || string.IsNullOrWhiteSpace(_options.Host))
+        {
+            _log.LogInformation("[EmailService:DEV] To={To} Subject={Subject}\n{Body}", to, subject, body);
+            return false;
+        }
 
-        using var client = new SmtpClient(host, port) { EnableSsl = true };
-        if (!string.IsNullOrWhiteSpace(user))
-            client.Credentials = new NetworkCredential(user, pass);
+        var user = _options.User?.Trim();
+        var pass = _options.Pass?.Trim();
+        var from = (_options.From ?? user)?.Trim();
+        if (string.IsNullOrWhiteSpace(user) ||
+            string.IsNullOrWhiteSpace(pass) ||
+            string.IsNullOrWhiteSpace(from))
+        {
+            _log.LogWarning("SMTP is enabled but credentials are incomplete. Email to {To} was not sent.", to);
+            return false;
+        }
 
-        var msg = new MailMessage(from, to, subject, body) { IsBodyHtml = true };
+        using var client = new SmtpClient(_options.Host, _options.Port)
+        {
+            EnableSsl = _options.EnableSsl,
+            Credentials = new NetworkCredential(user, pass),
+            DeliveryMethod = SmtpDeliveryMethod.Network
+        };
+
+        using var msg = new MailMessage
+        {
+            From = new MailAddress(from, _options.FromName ?? "Vehicle Management"),
+            Subject = subject,
+            Body = body,
+            IsBodyHtml = true
+        };
+        msg.To.Add(new MailAddress(to));
+
         try
         {
             await client.SendMailAsync(msg);
-            _log.LogInformation("Email sent to {To}", to);
+            _log.LogInformation("Email sent to {To} with subject {Subject}", to, subject);
+            return true;
         }
         catch (Exception ex)
         {
-            _log.LogError(ex, "Failed to send email to {To}", to);
+            _log.LogError(ex, "Failed to send email to {To} with subject {Subject}", to, subject);
+            return false;
         }
     }
 }

@@ -6,14 +6,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Vehicle.Application.Interface.IRepositories;
 using Vehicle.Application.Interface.IServices;
-using Vehicle.Infrastructure.Data;
 using Vehicle.Domain.Models;
+using Vehicle.Infrastructure.Data;
 using Vehicle.Infrastructure.Repositories;
 using Vehicle.Infrastructure.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DATABASE
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -21,7 +20,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// FORCE JWT - overrides cookie scheme set by AddIdentity
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Events.OnRedirectToLogin = context =>
@@ -36,9 +34,11 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
+builder.Services.AddScoped<IEmailOtpService, EmailOtpService>();
 builder.Services.AddScoped<ICustomerProfileService, CustomerProfileService>();
 
 builder.Services.AddScoped<IVehicleService, VehicleService>();
@@ -47,8 +47,8 @@ builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerVehicleService, CustomerVehicleService>();
 builder.Services.AddScoped<ICustomerServiceRepository, CustomerServiceRepository>();
 builder.Services.AddScoped<ICustomerServiceService, CustomerServiceService>();
+builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
 
-// === New feature services ===
 builder.Services.AddScoped<IVendorRepository, VendorRepository>();
 builder.Services.AddScoped<IVendorService, VendorService>();
 builder.Services.AddScoped<IPartRepository, PartRepository>();
@@ -62,7 +62,6 @@ builder.Services.AddScoped<IStaffServiceRequestsService, StaffServiceRequestsSer
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHostedService<NotificationWorker>();
 
-// AUTHENTICATION
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -92,14 +91,19 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    var smtp = app.Configuration.GetSection(SmtpOptions.SectionName);
+    app.Logger.LogInformation(
+        "SMTP enabled={Enabled} host={Host} credentialsConfigured={HasCredentials}",
+        smtp.GetValue<bool>("Enabled"),
+        smtp["Host"],
+        !string.IsNullOrWhiteSpace(smtp["User"]) && !string.IsNullOrWhiteSpace(smtp["Pass"]));
+
     app.MapOpenApi();
 
-    // Auto-apply EF Core migrations in development to prevent missing-table 500s.
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
 
-    // === Seed Identity roles + default admin ===
     var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     foreach (var r in new[] { "Admin", "Staff", "Customer" })
         if (!await roleMgr.RoleExistsAsync(r))
@@ -126,15 +130,11 @@ if (app.Environment.IsDevelopment())
         await userMgr.AddToRoleAsync(admin, "Admin");
     }
 
-    // Backfill role claims for existing users from their UserRole field
     foreach (var u in userMgr.Users.ToList())
     {
         if (string.IsNullOrWhiteSpace(u.UserRole)) continue;
-        if (!await userMgr.IsInRoleAsync(u, u.UserRole))
-        {
-            if (await roleMgr.RoleExistsAsync(u.UserRole))
-                await userMgr.AddToRoleAsync(u, u.UserRole);
-        }
+        if (!await userMgr.IsInRoleAsync(u, u.UserRole) && await roleMgr.RoleExistsAsync(u.UserRole))
+            await userMgr.AddToRoleAsync(u, u.UserRole);
     }
 }
 

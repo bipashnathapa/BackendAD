@@ -42,9 +42,13 @@
                 <label for="model">Model</label>
                 <div class="control"><input id="model" type="text" required placeholder="Civic / R15" style="padding-left:12px" /></div>
             </div>
+            <div class="field" id="customerOtpField" style="display:none;">
+                <label for="customerOtpCode">OTP code</label>
+                <div class="control"><input id="customerOtpCode" type="text" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit code" style="padding-left:12px" /></div>
+            </div>
 
             <div class="actions" style="grid-column: 1 / -1">
-                <button class="btn primary" type="submit">Register Customer</button>
+                <button class="btn primary" id="registerCustomerSubmit" type="submit">Send OTP</button>
             </div>
         </form>
 
@@ -96,8 +100,34 @@
         if (!token) window.location.href = "/login";
         if (role && role !== "staff") window.location.href = "/customer";
 
+        let pendingCustomerEmail = "";
+
         document.getElementById("registerCustomerForm").addEventListener("submit", async (e) => {
             e.preventDefault();
+            const otpField = document.getElementById("customerOtpField");
+            const submitBtn = document.getElementById("registerCustomerSubmit");
+
+            if (otpField.style.display !== "none") {
+                const otpCode = document.getElementById("customerOtpCode").value.trim();
+                if (!pendingCustomerEmail || otpCode.length !== 6) return;
+
+                try {
+                    const data = await window.VM.apiJson("/api/staff/customers/verify-otp", {
+                        method: "POST",
+                        body: JSON.stringify({ email: pendingCustomerEmail, otpCode }),
+                    });
+                    window.VM.showToast("ok", data.message || "Customer registered");
+                    document.getElementById("registerCustomerForm").reset();
+                    otpField.style.display = "none";
+                    submitBtn.textContent = "Send OTP";
+                    pendingCustomerEmail = "";
+                } catch (err) {
+                    window.VM.showToast("bad", err.message || "OTP verification failed");
+                }
+
+                return;
+            }
+
             const fullName = document.getElementById("fullName").value.trim();
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value;
@@ -110,11 +140,14 @@
             if (!fullName || !email || !password || !vehicleNo || !type || !brand) return;
 
             try {
-                const data = await window.VM.apiJson("/api/staff/customers", {
+                const data = await window.VM.apiJson("/api/staff/customers/request-otp", {
                     method: "POST",
                     body: JSON.stringify({ fullName, email, password, address, vehicleNo, model, brand, type }),
                 });
-                window.VM.showToast("ok", data.message || "Customer registered");
+                pendingCustomerEmail = email;
+                otpField.style.display = "";
+                submitBtn.textContent = "Verify OTP";
+                window.VM.showToast("ok", data.message || "OTP sent");
             } catch (err) {
                 window.VM.showToast("bad", err.message || "Request failed");
             }
@@ -133,7 +166,7 @@
                 return `
                     <tr>
                         <td>${c.customerId}</td>
-                        <td>${escapeHtml(c.fullName || "")}</td>
+                        <td><a href="/staff/customers/${c.customerId}" style="text-decoration:none;font-weight:700">${escapeHtml(c.fullName || "")}</a></td>
                         <td>${escapeHtml(c.email || "")}</td>
                         <td>${escapeHtml(c.phoneNumber || "")}</td>
                         <td>${escapeHtml(vehicles)}</td>
