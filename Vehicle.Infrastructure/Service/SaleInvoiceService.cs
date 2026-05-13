@@ -10,7 +10,13 @@ namespace Vehicle.Infrastructure.Service;
 public class SaleInvoiceService : ISaleInvoiceService
 {
     private readonly ApplicationDbContext _db;
-    public SaleInvoiceService(ApplicationDbContext db) => _db = db;
+    private readonly IEmailService _email;
+
+    public SaleInvoiceService(ApplicationDbContext db, IEmailService email)
+    {
+        _db = db;
+        _email = email;
+    }
 
     public async Task<SaleInvoiceDTO?> CreateAsync(string staffUserId, CreateSaleInvoiceDTO dto)
     {
@@ -51,7 +57,12 @@ public class SaleInvoiceService : ISaleInvoiceService
                 part.StockQuantity -= line.Quantity;
             }
 
-            var discount = Math.Round(subTotal * dto.DiscountPercent / 100m, 2);
+            // Auto-discount rule: if subtotal > 5000, apply at least 10% discount.
+            // This keeps the UI simple (staff doesn't need to calculate it).
+            var discountPercent = dto.DiscountPercent;
+            if (subTotal > 5000m && discountPercent < 10m) discountPercent = 10m;
+
+            var discount = Math.Round(subTotal * discountPercent / 100m, 2);
             var taxBase = subTotal - discount;
             var tax = Math.Round(taxBase * dto.TaxPercent / 100m, 2);
             var total = Math.Round(taxBase + tax, 2);
@@ -82,7 +93,7 @@ public class SaleInvoiceService : ISaleInvoiceService
             await _db.SaveChangesAsync();
             await tx.CommitAsync();
 
-            return new SaleInvoiceDTO
+            var dtoOut = new SaleInvoiceDTO
             {
                 InvoiceID = invoice.InvoiceID,
                 InvoiceNumber = invoice.InvoiceNumber,
@@ -107,6 +118,51 @@ public class SaleInvoiceService : ISaleInvoiceService
                     LineTotal = it.LineTotal
                 }).ToList()
             };
+
+            // Email the invoice to the customer (in dev this will log to console unless SMTP is configured).
+            var to = customer.User.Email;
+            if (!string.IsNullOrWhiteSpace(to))
+            {
+                var subject = $"Your invoice {invoice.InvoiceNumber}";
+                var body = $@"
+<div style=""font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.45"">
+  <h2 style=""margin:0 0 8px"">Invoice {invoice.InvoiceNumber}</h2>
+  <div style=""color:#6b7280;margin:0 0 14px"">Date: {invoice.InvoiceDate:yyyy-MM-dd HH:mm} (UTC)</div>
+  <div style=""border:1px solid #e5e7eb;border-radius:10px;padding:14px"">
+    <div><strong>Subtotal:</strong> {invoice.SubTotal:N2}</div>
+    <div><strong>Discount:</strong> −{invoice.Discount:N2}</div>
+    <div><strong>Tax:</strong> {invoice.Tax:N2}</div>
+    <div style=""margin-top:8px;font-size:16px""><strong>Total:</strong> {invoice.TotalAmount:N2}</div>
+    <div style=""margin-top:2px;color:#6b7280"">Paid: {invoice.AmountPaid:N2} • Due: {invoice.AmountDue:N2}</div>
+  </div>
+  <h3 style=""margin:18px 0 8px"">Items</h3>
+  <table cellpadding=""0"" cellspacing=""0"" style=""width:100%;border-collapse:collapse"">
+    <thead>
+      <tr>
+        <th align=""left"" style=""border-bottom:1px solid #e5e7eb;padding:8px 0"">Part</th>
+        <th align=""right"" style=""border-bottom:1px solid #e5e7eb;padding:8px 0"">Qty</th>
+        <th align=""right"" style=""border-bottom:1px solid #e5e7eb;padding:8px 0"">Price</th>
+        <th align=""right"" style=""border-bottom:1px solid #e5e7eb;padding:8px 0"">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {string.Join("", invoice.Items.Select(it => $@"
+      <tr>
+        <td style=""border-bottom:1px solid #f3f4f6;padding:8px 0"">{System.Net.WebUtility.HtmlEncode(it.PartNameSnapshot)}</td>
+        <td align=""right"" style=""border-bottom:1px solid #f3f4f6;padding:8px 0"">{it.Quantity}</td>
+        <td align=""right"" style=""border-bottom:1px solid #f3f4f6;padding:8px 0"">{it.UnitPrice:N2}</td>
+        <td align=""right"" style=""border-bottom:1px solid #f3f4f6;padding:8px 0"">{it.LineTotal:N2}</td>
+      </tr>
+      "))}
+    </tbody>
+  </table>
+  <div style=""color:#6b7280;margin-top:14px"">Thank you.</div>
+</div>";
+
+                await _email.SendAsync(to, subject, body);
+            }
+
+            return dtoOut;
         }
         catch
         {
