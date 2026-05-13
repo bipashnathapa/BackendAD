@@ -31,14 +31,14 @@
 </head>
 <body class="dashboard-layout staff-dashboard">
     <!-- Sidebar -->
-    <aside class="dash-sidebar dark-sidebar">
+    <aside class="dash-sidebar light-sidebar">
         <div class="dash-brand">
             <div class="brand-icon-box">
-                <i data-lucide="wrench"></i>
+                <i data-lucide="component"></i>
             </div>
             <div class="brand-text">
-                <span class="brand-title">AutoParts Pro</span>
-                <span class="brand-subtitle">WAREHOUSE ADMIN</span>
+                <span class="brand-title">Precision Logistics</span>
+                <span class="brand-subtitle">STAFF PORTAL</span>
             </div>
         </div>
         
@@ -49,16 +49,12 @@
             </a>
         </div>
 
-        <nav class="dash-nav dark-nav">
-            <a href="/staff/dashboard" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+        <nav class="dash-nav light-nav">
+            <a href="/staff/dashboard" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="layout-dashboard"></i>
                 Dashboard
             </a>
-            <a href="/staff/new-sale" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "NewSale", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
-                <i data-lucide="package"></i>
-                New Sale
-            </a>
-            <a href="/staff" class="dash-nav-item @(string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/staff/customers" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Customers", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="users"></i>
                 Customers
             </a>
@@ -66,21 +62,21 @@
                 <i data-lucide="layers"></i>
                 Inventory
             </a>
-            <a href="/staff/reports" class="dash-nav-item @(string.Equals((string)ViewContext.RouteData.Values["Action"], "Reports", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="#" class="dash-nav-item">
+                <i data-lucide="shopping-bag"></i>
+                Sales
+            </a>
+            <a href="#" class="dash-nav-item">
                 <i data-lucide="bar-chart-2"></i>
                 Reports
             </a>
         </nav>
 
-        <div class="dash-sidebar-footer dark-footer">
-            <a href="#" class="dash-nav-item">
-                <i data-lucide="settings"></i>
-                Settings
-            </a>
-            <a href="/login" class="dash-nav-item">
+        <div class="dash-sidebar-footer light-footer">
+            <button type="button" class="dash-nav-item" id="staffLogoutBtn" style="background:none;border:none;width:100%;text-align:left;cursor:pointer">
                 <i data-lucide="log-out"></i>
                 Logout
-            </a>
+            </button>
         </div>
     </aside>
 
@@ -103,10 +99,10 @@
                 
                 <div class="user-profile">
                     <div class="user-text">
-                        <span class="user-name">@fullName</span>
-                        <span class="user-role">@(userRole.ToUpper())</span>
+                        <span class="user-name" id="staffUserName">—</span>
+                        <span class="user-role" id="staffUserRole">STAFF</span>
                     </div>
-                    <img src="https://ui-avatars.com/api/?name=@(fullName.Replace(" ", "+"))&background=0D8ABC&color=fff&rounded=true" alt="User Avatar" />
+                    <img id="staffAvatar" src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff&rounded=true" alt="User Avatar" />
                 </div>
             </div>
         </header>
@@ -122,6 +118,37 @@
     <script src="~/js/api-client.js"></script>
     <script>
         lucide.createIcons();
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Show current signed-in staff/admin in header (JWT stored in localStorage)
+            try {
+                const nameEl = document.getElementById("staffUserName");
+                const roleEl = document.getElementById("staffUserRole");
+                const avatarEl = document.getElementById("staffAvatar");
+
+                const displayName = (window.VM?.getUserDisplayName?.() || "").trim();
+                const role = (window.VM?.getUserRole?.() || "Staff").trim().toUpperCase();
+
+                if (nameEl) nameEl.textContent = displayName || "User";
+                if (roleEl) roleEl.textContent = role || "STAFF";
+                if (avatarEl) {
+                    const n = encodeURIComponent(displayName || "User");
+                    avatarEl.src = `https://ui-avatars.com/api/?name=${n}&background=0D8ABC&color=fff&rounded=true`;
+                }
+            } catch {}
+
+            const btn = document.getElementById("staffLogoutBtn");
+            if (!btn) return;
+            btn.addEventListener("click", () => {
+                try { window.VM?.clearAuth?.(); } catch {}
+                try {
+                    localStorage.removeItem("vm_token");
+                    localStorage.removeItem("vm_email");
+                    localStorage.removeItem("vm_display_name");
+                } catch {}
+                window.location.href = "/login";
+            });
+        });
     </script>
     @RenderSection("Scripts", required: false)
 </body>

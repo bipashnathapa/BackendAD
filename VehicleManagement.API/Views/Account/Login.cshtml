@@ -68,7 +68,10 @@
                 window.VM.showToast("ok", data.message || "Login successful");
 
                 const role = (window.VM.getUserRole() || "").toLowerCase();
-                const nextUrl = role === "staff" ? "/staff" : "/customer";
+                const nextUrl =
+                    role === "admin" ? "/admin/dashboard" :
+                    role === "staff" ? "/staff/dashboard" :
+                    "/customer/dashboard";
 
                 window.VM.wireNav();
                 setTimeout(() => window.location.href = nextUrl, 450);

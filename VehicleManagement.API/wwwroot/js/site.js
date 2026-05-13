@@ -2,6 +2,7 @@
   const storageKeys = {
     token: "vm_token",
     email: "vm_email",
+    displayName: "vm_display_name",
   };
 
   function base64UrlToUtf8(base64Url) {
@@ -86,6 +87,17 @@
   function clearAuth() {
     localStorage.removeItem(storageKeys.token);
     localStorage.removeItem(storageKeys.email);
+    localStorage.removeItem(storageKeys.displayName);
+  }
+
+  function getUserDisplayName() {
+    try {
+      const override = localStorage.getItem(storageKeys.displayName) || "";
+      if (override.trim()) return override.trim();
+    } catch {
+      // ignore storage errors
+    }
+    return getUserDisplayNameFromToken(getToken());
   }
 
   function authHeader() {
@@ -159,7 +171,10 @@
       return;
     }
 
-    const nextUrl = role === "staff" ? "/staff" : "/customer";
+    const nextUrl =
+      role === "admin" ? "/admin/dashboard" :
+      role === "staff" ? "/staff/dashboard" :
+      "/customer/dashboard";
     dashboardLink.href = nextUrl;
     dashboardLink.style.display = "";
     if (loginLink) loginLink.style.display = "none";
@@ -177,7 +192,7 @@
     storageKeys,
     parseJwt,
     getUserRole: () => getUserRoleFromToken(getToken()),
-    getUserDisplayName: () => getUserDisplayNameFromToken(getToken()),
+    getUserDisplayName,
   };
 
   document.addEventListener("DOMContentLoaded", () => {

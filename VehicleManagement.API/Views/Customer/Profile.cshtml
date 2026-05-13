@@ -1,163 +1,138 @@
-@using Microsoft.AspNetCore.Identity
-@using Vehicle.Domain.Models
-@inject UserManager<ApplicationUser> UserManager
-
 @{
     ViewData["Title"] = "My Profile";
     Layout = "_DashboardLayout";
-    
-    var currentUser = await UserManager.GetUserAsync(User);
-    
-    // Fallback to first user for demo
-    if (currentUser == null)
-    {
-        currentUser = UserManager.Users.FirstOrDefault(u => u.UserRole == "Customer") 
-                      ?? UserManager.Users.FirstOrDefault();
-    }
-    
-    var fullName = currentUser?.FullName ?? "Sarah Jenkins (Demo)";
-    var email = currentUser?.Email ?? "sarah.jenkins@example.com";
-    var phone = currentUser?.PhoneNumber ?? "+1 (555) 123-4567";
-    var address = currentUser?.Address ?? "452 West End Ave, New York, NY 10024";
-    var dob = currentUser?.DOB?.ToString("yyyy-MM-dd") ?? "1992-04-12";
-    var role = currentUser?.UserRole ?? "Premium Member";
-    var initials = string.Join("", fullName.Split(' ').Select(n => (n.Length > 0 ? n[0].ToString() : "")));
 }
 
 <div class="dash-page-header">
     <h1>My Profile</h1>
-    <p>Manage your personal information and preferences.</p>
+    <p>Update your personal information.</p>
 </div>
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div style="background-color: #d1fae5; color: #065f46; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-weight: 600; display: flex; align-items: center; gap: 12px; border: 1px solid #10b981;">
-        <i data-lucide="check-circle" style="width: 20px; height: 20px;"></i>
-        @TempData["SuccessMessage"]
-    </div>
-}
-
-@if (TempData["ErrorMessage"] != null)
-{
-    <div style="background-color: #fee2e2; color: #991b1b; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-weight: 600; display: flex; align-items: center; gap: 12px; border: 1px solid #ef4444;">
-        <i data-lucide="alert-circle" style="width: 20px; height: 20px;"></i>
-        @TempData["ErrorMessage"]
-    </div>
-}
+<div id="toast" class="dash-toast" role="status" aria-live="polite"></div>
 
 <div class="dash-grid">
     <div class="dash-main-col">
         <div class="dash-card">
-            <div style="padding: 32px;">
-                <h3 style="margin-top: 0; margin-bottom: 24px; font-size: 18px;">Personal Information</h3>
-                <form method="post" action="/Customer/Profile">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-                        <div>
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Full Name</label>
-                            <input type="text" name="FullName" value="@fullName" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Email Address</label>
-                            <input type="email" name="Email" value="@email" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Phone Number</label>
-                            <input type="tel" name="Phone" value="@phone" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Date of Birth</label>
-                            <input type="date" name="DOB" value="@dob" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 32px;">
-                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Address</label>
-                        <input type="text" name="Address" value="@address" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
-                    </div>
-
-                    <div style="display: flex; justify-content: flex-end; gap: 16px;">
-                        <button type="button" class="btn-outline" style="width: auto; padding: 10px 24px;">Cancel</button>
-                        <button type="submit" class="dash-btn-primary" style="width: auto; padding: 10px 24px;">Save Changes</button>
-                    </div>
-                </form>
+            <div class="dash-card-header">
+                <h3>Personal Information</h3>
+                <p>Keep your details up to date.</p>
             </div>
-        </div>
-
-        <div class="dash-card" style="margin-top: 24px;">
-            <div style="padding: 32px;">
-                <h3 style="margin-top: 0; margin-bottom: 24px; font-size: 18px;">Security & Password</h3>
-                <form method="post" action="/Customer/Profile">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-                        <div>
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Current Password</label>
-                            <input type="password" placeholder="••••••••" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
+            <div class="dash-card-body">
+                <form id="profileForm" class="dash-form">
+                    <div class="dash-form-row">
+                        <div class="dash-field">
+                            <label for="fullName">Full name</label>
+                            <input id="fullName" type="text" required />
+                        </div>
+                        <div class="dash-field">
+                            <label for="email">Email</label>
+                            <input id="email" type="email" disabled autocomplete="off" />
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
-                        <div>
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">New Password</label>
-                            <input type="password" placeholder="••••••••" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
+                    <div class="dash-form-row">
+                        <div class="dash-field">
+                            <label for="phoneNumber">Phone</label>
+                            <input id="phoneNumber" type="tel" />
                         </div>
-                        <div>
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dash-muted); margin-bottom: 8px;">Confirm New Password</label>
-                            <input type="password" placeholder="••••••••" style="width: 100%; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: var(--dash-bg); color: var(--dash-text); box-sizing: border-box;" />
+                        <div class="dash-field">
+                            <label for="dob">Date of birth</label>
+                            <input id="dob" type="date" />
                         </div>
                     </div>
-
-                    <div style="display: flex; justify-content: flex-end;">
-                        <button type="submit" class="dash-btn-primary" style="width: auto; padding: 10px 24px; background-color: var(--dash-dark-surface);">Update Password</button>
+                    <div class="dash-field">
+                        <label for="address">Address</label>
+                        <input id="address" type="text" />
+                    </div>
+                    <div class="dash-actions">
+                        <button class="dash-btn-primary" type="submit">Save Changes</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Sidebar Column -->
-    <div class="dash-sidebar-col">
-        <!-- Profile summary card -->
-        <div class="widget" style="text-align: center; padding: 32px 24px;">
-            <div style="width: 96px; height: 96px; border-radius: 50%; background-color: var(--dash-primary-light); color: var(--dash-primary); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 700; margin: 0 auto 16px;">
-                @initials
+    <div class="dash-side-col">
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <h3>Account</h3>
+                <p>Signed in details.</p>
             </div>
-            <h3 style="margin: 0 0 4px; font-size: 18px;">@fullName</h3>
-            <p style="margin: 0 0 16px; color: var(--dash-muted); font-size: 14px;">@role since @(currentUser?.EmailConfirmed == true ? "2021" : "2024")</p>
-            <span class="status-badge">Verified Account</span>
-        </div>
-
-        <div class="widget">
-            <div class="widget-title">
-                <h3>Preferences</h3>
-            </div>
-            
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-                <div>
-                    <h4 style="margin: 0 0 4px; font-size: 14px; font-weight: 600;">Email Notifications</h4>
-                    <p style="margin: 0; font-size: 12px; color: var(--dash-muted);">Service reminders & offers</p>
-                </div>
-                <div style="width: 40px; height: 24px; background-color: var(--dash-success); border-radius: 12px; position: relative; cursor: pointer;">
-                    <div style="width: 20px; height: 20px; background-color: white; border-radius: 50%; position: absolute; right: 2px; top: 2px; box-shadow: var(--dash-shadow-sm);"></div>
-                </div>
-            </div>
-
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-                <div>
-                    <h4 style="margin: 0 0 4px; font-size: 14px; font-weight: 600;">SMS Alerts</h4>
-                    <p style="margin: 0; font-size: 12px; color: var(--dash-muted);">Important status updates</p>
-                </div>
-                <div style="width: 40px; height: 24px; background-color: var(--dash-success); border-radius: 12px; position: relative; cursor: pointer;">
-                    <div style="width: 20px; height: 20px; background-color: white; border-radius: 50%; position: absolute; right: 2px; top: 2px; box-shadow: var(--dash-shadow-sm);"></div>
-                </div>
-            </div>
-            
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <h4 style="margin: 0 0 4px; font-size: 14px; font-weight: 600;">Two-Factor Auth</h4>
-                    <p style="margin: 0; font-size: 12px; color: var(--dash-muted);">Extra account security</p>
-                </div>
-                <div style="width: 40px; height: 24px; background-color: var(--dash-border); border-radius: 12px; position: relative; cursor: pointer;">
-                    <div style="width: 20px; height: 20px; background-color: white; border-radius: 50%; position: absolute; left: 2px; top: 2px; box-shadow: var(--dash-shadow-sm);"></div>
-                </div>
+            <div class="dash-card-body">
+                <div class="dash-strong" id="profileName">—</div>
+                <div class="dash-sub" id="profileEmail">—</div>
+                <div style="height:10px"></div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const token = localStorage.getItem(window.VM?.storageKeys?.token || "vm_token") || "";
+        const role = (window.VM?.getUserRole?.() || "").toLowerCase();
+        if (!token) window.location.href = "/login";
+        if (role === "admin") window.location.href = "/admin/dashboard";
+        if (role === "staff") window.location.href = "/staff/dashboard";
+
+        const el = (id) => document.getElementById(id);
+
+        function toDateInputValue(dobIso) {
+            if (!dobIso) return "";
+            try {
+                const d = new Date(dobIso);
+                // convert to yyyy-mm-dd
+                const y = d.getUTCFullYear();
+                const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+                const day = String(d.getUTCDate()).padStart(2, "0");
+                return `${y}-${m}-${day}`;
+            } catch {
+                return "";
+            }
+        }
+
+        async function loadProfile() {
+            const p = await window.VM.apiJson("/api/customer/profile");
+            el("fullName").value = p.fullName || "";
+            el("email").value = p.email || "";
+            el("phoneNumber").value = p.phoneNumber || "";
+            el("address").value = p.address || "";
+            el("dob").value = toDateInputValue(p.dob);
+            el("profileName").textContent = p.fullName || "—";
+            el("profileEmail").textContent = p.email || "—";
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                await loadProfile();
+            } catch (err) {
+                window.VM.showToast("bad", err.message || "Failed to load profile");
+            }
+
+            el("profileForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const payload = {
+                    fullName: el("fullName").value.trim(),
+                    phoneNumber: el("phoneNumber").value.trim() || null,
+                    address: el("address").value.trim() || null,
+                    dob: el("dob").value ? new Date(el("dob").value + "T00:00:00Z").toISOString() : null
+                };
+
+                try {
+                    const res = await window.VM.apiJson("/api/customer/profile", {
+                        method: "PUT",
+                        body: JSON.stringify(payload)
+                    });
+                    try {
+                        localStorage.setItem(window.VM?.storageKeys?.displayName || "vm_display_name", payload.fullName);
+                    } catch {
+                        // ignore storage errors
+                    }
+                    window.VM.showToast("ok", res.message || "Profile updated");
+                    await loadProfile();
+                } catch (err) {
+                    window.VM.showToast("bad", err.message || "Update failed");
+                }
+            });
+        });
+    </script>
+}
