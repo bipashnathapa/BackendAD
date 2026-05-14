@@ -39,7 +39,7 @@
                 <i data-lucide="package"></i>
                 New Sale
             </a>
-            <a href="/staff" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Index", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+            <a href="/staff/customers" class="dash-nav-item @(string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "Customers", StringComparison.OrdinalIgnoreCase) || string.Equals(ViewContext.RouteData.Values["Action"]?.ToString(), "CustomerHistory", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                 <i data-lucide="users"></i>
                 Customers
             </a>
